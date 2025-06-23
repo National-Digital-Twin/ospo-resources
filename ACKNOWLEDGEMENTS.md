@@ -1,6 +1,6 @@
 # Acknowledgements
 
-**Repository:** `[archetypes]`  
+**Repository:** `ospo-resources`  
 **Description:** `Recognises suppliers, partner organisations, and other contributors to the repository’s development.`  
 **SPDX-License-Identifier:** `OGL-UK-3.0`  
 
@@ -10,12 +10,7 @@ The National Digital Twin Programme (NDTP) would like to acknowledge the contrib
 
 Over time, the following organisations have provided technical expertise, development support, and domain knowledge that have contributed to the evolution of this project:
 
-i.e. 
-- [Supplier A]
-- [Supplier B]
-- [Supplier C]
-- [Supplier D]
-(etc.)
+- Informed Solutions
 
 <!--
 

@@ -1,6 +1,6 @@
 # Maintainers  
 
-**Repository:** `[archetypes]`  
+**Repository:** `ospo-resources`  
 **Description:** `Lists maintainers responsible for reviewing issues, security, and documentation updates.`  
 **SPDX-License-Identifier:** `OGL-UK-3.0`  
 
@@ -32,9 +32,9 @@ NDTP does not accept public code contributions, but we welcome **bug reports and
 
 | Name              | Organisation           | Role               | Contact                |
 |-------------------|------------------------|--------------------|------------------------|
-| [Maintainer Name] | [NDTP / Supplier Name] | Lead Maintainer    | [email@example.com]    |
-| [Maintainer Name] | [NDTP / Supplier Name] | Security Contact   | [security@example.com] |
-| [Maintainer Name] | [NDTP / Supplier Name] | Documentation Lead | [docs@example.com]     |
+| [Maintainer Name] | [NDTP / Supplier Name] | Lead Maintainer    | [NDTP-OSS@informed.com]|
+| [Maintainer Name] | [NDTP / Supplier Name] | Security Contact   | [NDTP-OSS@informed.com]|
+| [Maintainer Name] | [NDTP / Supplier Name] | Documentation Lead | [NDTP-OSS@informed.com]|
 
 For general issues, please **open a GitHub issue** rather than contacting maintainers directly.  
 
@@ -68,7 +68,7 @@ GUIDANCE: USE THIS IN PLACE OF THE ABOVE IF THE REPOSITORY IS IN TRANSITION. PLE
 
 # Maintainers  
 
-**Repository:** `[archetypes]`  
+**Repository:** `ospo-resources`  
 **Description:** `Lists maintainers responsible for reviewing issues, security, and documentation updates.`  
 **SPDX-License-Identifier: OGL-UK-3.0
 

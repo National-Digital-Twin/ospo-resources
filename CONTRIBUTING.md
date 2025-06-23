@@ -1,6 +1,6 @@
 # Contribution Guidelines  
 
-**Repository:** `[archetypes]`  
+**Repository:** `ospo-resources`  
 **Description:** `Guidelines for issue reporting, documentation suggestions, and NDTP’s controlled contribution model.`  
 **SPDX-License-Identifier:** `OGL-UK-3.0`  
 
