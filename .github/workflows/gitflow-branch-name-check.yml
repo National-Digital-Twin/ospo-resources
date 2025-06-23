@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+
+name: GitFlow - Enforce Branch Naming Convention
+
+on:
+  push:
+    branches-ignore:
+      - "main"
+      - "develop"
+      - "release/**"
+
+jobs:
+  enforce-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+
+          if [[ "$BRANCH_NAME" =~ ^(feature/|hotfix/|bugfix/|release/) ]]; then
+            echo "✅ Valid branch name: $BRANCH_NAME"
+            exit 0
+          else
+            echo "❌ Invalid branch name: $BRANCH_NAME"
+            echo "✅ Allowed prefixes: feature/, hotfix/, bugfix/, release/"
+            exit 1
+          fi
