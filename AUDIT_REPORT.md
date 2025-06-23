@@ -1,7 +1,7 @@
 # Open-Source Compliance & Code Audit Report 
 # SPDX-License-Identifier: OGL-UK-3.0 
 
-**Repository:** `[archetypes]`   
+**Repository:** `ospo-resources`   
 **Date of Last Audit:** `[YYYY-MM-DD]`   
 **Reviewed By:** `[NDTP Supplier]`   
 

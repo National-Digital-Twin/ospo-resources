@@ -1,6 +1,6 @@
 # Changelog 
 
-**Repository:** `[archetypes]`  
+**Repository:** `ospo-resources`  
 **Description:** `Tracks all notable changes, version history, and roadmap toward 1.0.0 following Semantic Versioning.`  
 **SPDX-License-Identifier:** `OGL-UK-3.0`  
 
@@ -17,54 +17,14 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
-## [Unreleased] 
+## [0.1.0] – 2025-06-23 
 
-### Added 
-- Placeholder for upcoming features and enhancements. 
+### Initial Repository Creation
 
-### Fixed 
-- Placeholder for bug fixes and security updates. 
-
-### Changed 
-- Placeholder for changes to existing functionality. 
-
----
-
-## [0.90.0] – YYYY-MM-DD 
-
-### Initial Public Release (Pre-Stable) 
-
-This is the first public release of this repository under NDTP's open-source governance model. 
-Since this release is **pre-1.0.0**, changes may still occur that are **not fully backward-compatible**. 
+Initial repository creation and configuration.
 
 #### Initial Features 
-- Key functionality for [feature/module name]. 
-- Implementation of [API/component name]. 
-- Documentation and onboarding guidance. 
-
-#### Known Limitations 
-- Some components are subject to change before `1.0.0`. 
-- APIs may evolve based on partner feedback and internal testing. 
-
----
-
-## [0.90.1] – YYYY-MM-DD 
-
-### Fixed 
-- Security patch addressing [issue]. 
-- Minor bug fix in [module]. 
-
----
-
-## [0.91.0] – YYYY-MM-DD 
-
-### Added 
-- New feature: [Feature name]. 
-
-### Changed 
-- Adjusted API contracts for [component]. 
-
----
+-  Addition of reusable GitHub Actions workflows.
 
 ## Future Roadmap to `1.0.0` 
 

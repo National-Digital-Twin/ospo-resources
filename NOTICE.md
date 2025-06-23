@@ -1,6 +1,6 @@
 # NOTICE  
 
-**Repository:** `[archetypes]`    
+**Repository:** `ospo-resources`    
 **Description:** `Attribution and legal notices related to the use of this repository, including acknowledgments of external contributions.`    
 **SPDX-License-Identifier:** `OGL-UK-3.0`  
 
