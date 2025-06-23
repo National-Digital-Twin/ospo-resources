@@ -1,0 +1,54 @@
+{
+  "name": "develop",
+  "target": "branch",
+  "source_type": "Repository",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "refs/heads/develop"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": true,
+        "required_review_thread_resolution": true,
+        "allowed_merge_methods": [
+          "squash"
+        ]
+      }
+    },
+    {
+      "type": "merge_queue",
+      "parameters": {
+        "merge_method": "SQUASH",
+        "max_entries_to_build": 5,
+        "min_entries_to_merge": 1,
+        "max_entries_to_merge": 5,
+        "min_entries_to_merge_wait_minutes": 5,
+        "grouping_strategy": "ALLGREEN",
+        "check_response_timeout_minutes": 60
+      }
+    }
+  ],
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ]
+}
