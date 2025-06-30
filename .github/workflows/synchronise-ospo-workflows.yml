@@ -48,6 +48,11 @@ jobs:
             fi
           done < ospo-resources/organisation-required-workflows.txt
 
+      - name: Check out pull request branch
+        run: |
+          git fetch origin ${{ github.head_ref }}
+          git checkout ${{ github.head_ref }}
+  
       - name: Auto-commit updated workflow files (if applicable)
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
