@@ -73,7 +73,7 @@ jobs:
           git checkout ${{ github.head_ref }}
 
       - name: Auto-commit updated workflow files (if applicable)
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: "feat(OSPO): synchronise OSPO workflows"
           commit_user_name: github-actions
