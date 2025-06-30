@@ -3,14 +3,18 @@ name: Synchronise OSPO Workflows
 on:
   pull_request:
 
-permissions:
-  contents: read
-
 jobs:
   synchronise-ospo-workflows:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Fetch GitHub App token for target repo (write)
+        id: target_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+
       - name: Fetch GitHub App token for OSPO source repo (read-only)
         id: ospo_token
         uses: actions/create-github-app-token@v2
@@ -21,24 +25,17 @@ jobs:
           repository: ospo-resources
           permission-contents: read
 
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.target_token.outputs.token }}
+
       - name: Checkout OSPO source repository
         uses: actions/checkout@v4
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
           token: ${{ steps.ospo_token.outputs.token }}
-
-      - name: Fetch GitHub App token for target repo (write)
-        id: target_token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
-          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
-
-      - name: Checkout target repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.target_token.outputs.token }}
 
       - name: Copy and compare workflow files from OSPO repo
         run: |
