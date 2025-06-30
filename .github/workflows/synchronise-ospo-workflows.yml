@@ -1,0 +1,65 @@
+name: Synchronise OSPO Workflows
+
+on:
+  pull_request:
+
+jobs:
+  sync-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+
+      - name: Checkout OSPO source repository
+        uses: actions/checkout@v4
+        with:
+          repository: National-Digital-Twin/ospo-resources
+          path: ospo-resources
+
+      - name: Copy and compare workflow files from OSPO repo
+        run: |
+          while IFS= read -r file || [ -n "$file" ]; do
+            # Skip comments and empty lines
+            if [[ -z "$file" || "$file" == \#* ]]; then
+              continue
+            fi
+
+            src="ospo-resources/$file"
+            filename="$(basename "$file")"
+            tgt=".github/workflows/$filename"
+
+            if [ ! -f "$src" ]; then
+              echo "WARNING: Source file not found in OSPO repository: $src"
+              continue
+            fi
+
+            mkdir -p "$(dirname "$tgt")"
+
+            if [ ! -f "$tgt" ]; then
+              echo "File missing in target repo: $tgt"
+              cp "$src" "$tgt"
+            elif ! cmp -s "$src" "$tgt"; then
+              echo "File differs and will be updated: $tgt"
+              cp "$src" "$tgt"
+            else
+              echo "File is already up to date: $tgt"
+            fi
+          done < ospo-resources/ospo-required-workflows.txt
+
+      - name: Auto-commit updated workflow files (if applicable)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat(OSPO): synchronise OSPO workflows"
+          commit_user_name: github-actions
+          commit_user_email: actions@github.com
+          file_pattern: .github/workflows/*
+          skip_fetch: true
+
+      - name: Check for repo changes and fail if modified
+        run: |
+          if [ "$(git status --porcelain .github/workflows)" != "" ]; then
+            echo "Some workflow files were changed. Failing to block merge until sync is complete."
+            exit 1
+          else
+            echo "No changes needed. All workflow files are in sync."

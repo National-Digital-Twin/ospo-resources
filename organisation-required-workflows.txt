@@ -1,0 +1,5 @@
+# This file contains relative paths to workflows that are checked in target repositories by organisation ruleset checks when a pull
+# request is opened. If a workflow file listed here is not found in the target repository, it will be
+# automatically synchronised and committed to the source branch of the pull request.
+
+.github/workflows/publish-github-release.yml
