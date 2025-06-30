@@ -80,7 +80,6 @@ jobs:
           commit_user_email: actions@github.com
           file_pattern: .github/workflows/*
           skip_fetch: true
-          token: ${{ steps.target_token.outputs.token }}
 
       - name: Check for file changes and fail if sync is not complete
         run: |
