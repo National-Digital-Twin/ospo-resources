@@ -22,7 +22,7 @@ jobs:
           app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
           private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
           owner: National-Digital-Twin
-          repository: ospo-resources
+          repositories: ospo-resources
           permission-contents: read
 
       - name: Checkout target repository
