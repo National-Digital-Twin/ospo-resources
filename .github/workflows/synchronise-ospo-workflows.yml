@@ -16,7 +16,7 @@ jobs:
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PACKAGES_PAT }}
 
       - name: Copy and compare workflow files from OSPO repo
         run: |
