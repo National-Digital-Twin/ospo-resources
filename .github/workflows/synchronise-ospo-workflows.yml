@@ -3,11 +3,20 @@ name: Synchronise OSPO Workflows
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   synchronise-ospo-workflows:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout OSPO source repository
+        uses: actions/checkout@v4
+        with:
+          repository: National-Digital-Twin/ospo-resources
+          path: ospo-resources
+      
       - name: Fetch application token
         id: create_app_token
         uses: actions/create-github-app-token@v2
@@ -18,13 +27,6 @@ jobs:
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.create_app_token.outputs.token }}
-
-      - name: Checkout OSPO source repository
-        uses: actions/checkout@v4
-        with:
-          repository: National-Digital-Twin/ospo-resources
-          path: ospo-resources
           token: ${{ steps.create_app_token.outputs.token }}
 
       - name: Copy and compare workflow files from OSPO repo
