@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Fetch application token
-        id: app-token
+        id: create_app_token
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
