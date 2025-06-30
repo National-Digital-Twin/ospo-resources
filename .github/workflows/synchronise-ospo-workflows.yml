@@ -84,8 +84,8 @@ jobs:
       - name: Check for file changes and fail if sync is not complete
         run: |
           if [ "$(git status --porcelain .github/workflows)" != "" ]; then
-            echo "Some workflow files were changed. Failing to block merge until sync is complete."
+            echo "Some workflow files were changed. Failing status check to block merge until sync is complete."
             exit 1
           else
-            echo "No changes needed. All workflow files are in sync."
+            echo "No changes required. All OSPO workflow files are in sync."
           fi
