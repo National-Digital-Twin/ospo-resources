@@ -11,23 +11,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Fetch GitHub App token for OSPO source repo (read-only)
+        id: ospo_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+          owner: National-Digital-Twin
+          repository: ospo-resources
+          permission-contents: read
+
       - name: Checkout OSPO source repository
         uses: actions/checkout@v4
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
-      
-      - name: Fetch application token
-        id: create_app_token
+          token: ${{ steps.ospo_token.outputs.token }}
+
+      - name: Fetch GitHub App token for target repo (write)
+        id: target_token
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
           private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
-      
+
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.create_app_token.outputs.token }}
+          token: ${{ steps.target_token.outputs.token }}
 
       - name: Copy and compare workflow files from OSPO repo
         run: |
@@ -63,7 +74,7 @@ jobs:
         run: |
           git fetch origin ${{ github.head_ref }}
           git checkout ${{ github.head_ref }}
-  
+
       - name: Auto-commit updated workflow files (if applicable)
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -72,6 +83,7 @@ jobs:
           commit_user_email: actions@github.com
           file_pattern: .github/workflows/*
           skip_fetch: true
+          token: ${{ steps.target_token.outputs.token }}
 
       - name: Check for file changes and fail if sync is not complete
         run: |
@@ -80,4 +92,3 @@ jobs:
             exit 1
           else
             echo "No changes needed. All workflow files are in sync."
-          fi
