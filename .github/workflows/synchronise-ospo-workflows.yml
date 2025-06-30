@@ -89,3 +89,4 @@ jobs:
             exit 1
           else
             echo "No changes needed. All workflow files are in sync."
+          fi
