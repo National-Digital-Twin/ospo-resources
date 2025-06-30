@@ -19,7 +19,7 @@ jobs:
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
-          token: ${{ secrets.GH_PACKAGES_PAT }}
+          token: ${{ secrets.OSPO_PAT }}
 
       - name: Copy and compare workflow files from OSPO repo
         run: |
@@ -59,6 +59,7 @@ jobs:
       - name: Auto-commit updated workflow files (if applicable)
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
+          token: ${{ secrets.OSPO_PAT }}
           commit_message: "feat(OSPO): synchronise OSPO workflows"
           commit_user_name: github-actions
           commit_user_email: actions@github.com
