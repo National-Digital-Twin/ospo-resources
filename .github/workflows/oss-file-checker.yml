@@ -1,0 +1,103 @@
+# SPDX-License-Identifier: Apache-2.0
+# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+
+name: Check for presence of OSS files
+
+on:
+  pull_request:
+
+jobs:
+  oss-file-test:
+    if: ${{ github.event.repository.private == false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch GitHub App token for target repo
+        id: target_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+          permission-contents: read
+
+      - name: Fetch GitHub App token for OSPO source repo (read-only)
+        id: ospo_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+          owner: National-Digital-Twin
+          repositories: ospo-resources
+          permission-contents: read
+
+      - name: Fetch GitHub App token for archetypes repo
+        id: archetypes_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+          repositories: archetypes
+          permission-contents: read
+
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.target_token.outputs.token }}
+
+      - name: Checkout OSPO source repository
+        uses: actions/checkout@v4
+        with:
+          repository: National-Digital-Twin/ospo-resources
+          path: ospo-resources
+          token: ${{ steps.ospo_token.outputs.token }}
+
+      - name: Checkout archetypes source repository
+        uses: actions/checkout@v4
+        with:
+          repository: National-Digital-Twin/ospo-resources
+          path: archetypes
+          token: ${{ steps.archetypes_token.outputs.token }}
+
+      - name: Test for presence of OSS files
+        run: |
+          missing_files=()
+          unchanged_files=()
+
+          while IFS= read -r file || [ -n "$file" ]; do
+            # Skip comments and empty lines
+            if [[ -z "$file" || "$file" == \#* ]]; then
+              continue
+            fi
+
+            target_path="$file"
+            archetypes_path="archetypes/$file"
+
+            if [ ! -f "$target_path" ]; then
+              echo "Missing OSS file in target repository: $target_path"
+              missing_files+=("$file")
+            elif cmp -s "$target_path" "$archetypes_path"; then
+              echo "OSS file unchanged from archetypes template: $target_path"
+              unchanged_files+=("$file")
+            else
+              echo "OSS file present and different from the archetypes template: $target_path"
+            fi
+          done < ospo-resources/oss-checklist-files.txt
+
+          echo ""
+          if [ ${#missing_files[@]} -ne 0 ]; then
+            echo "The following OSS required files are missing:"
+            printf '%s\n' "${missing_files[@]}"
+          fi
+
+          if [ ${#unchanged_files[@]} -ne 0 ]; then
+            echo "The following OSS required files are unchanged from the archetypes template:"
+            printf '%s\n' "${unchanged_files[@]}"
+          fi
+
+          if [ ${#missing_files[@]} -ne 0 ] || [ ${#unchanged_files[@]} -ne 0 ]; then
+            echo "OSS required file check failed."
+            exit 1
+          else
+            echo "All OSS files are present and customised."
+          fi
+
