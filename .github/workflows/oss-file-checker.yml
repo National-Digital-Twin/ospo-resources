@@ -30,15 +30,6 @@ jobs:
           repositories: ospo-resources
           permission-contents: read
 
-      - name: Fetch GitHub App token for archetypes repo
-        id: archetypes_token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
-          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
-          repositories: archetypes
-          permission-contents: read
-
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
@@ -56,7 +47,6 @@ jobs:
         with:
           repository: National-Digital-Twin/ospo-resources
           path: archetypes
-          token: ${{ steps.archetypes_token.outputs.token }}
 
       - name: Test for presence of OSS files
         run: |
