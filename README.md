@@ -10,11 +10,11 @@ This repository contains technical resources produced by the NDTP Open Source Pr
 
 ## Prerequisites  
 
-The only prerequisites to access and use these materials are that have a github account and are enrolled in the National-Digital-Twin GitHub organisation.
+The only prerequisites to use the synchronise-ospo-workflows GitHub Action is that the target repository enrolled is in the National-Digital-Twin GitHub organisation.
 
 ### Pull Requests
 
-Any propsoed changes to the main branch must be navigated via a Pull Request, which has been enforced using branch protection policies. Pull requests must include the details in the [PULL_REQUEST_TEMPLATE.md](./.github/PULL_REQUEST_TEMPLATE.md) file.
+Any proposed changes to the main branch must be navigated via a Pull Request, which has been enforced using branch protection policies. Pull requests must include the details in the [PULL_REQUEST_TEMPLATE.md](./.github/PULL_REQUEST_TEMPLATE.md) file.
 
 ## Features  
 
