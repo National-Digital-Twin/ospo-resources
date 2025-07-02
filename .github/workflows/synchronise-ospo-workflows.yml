@@ -1,0 +1,95 @@
+# SPDX-License-Identifier: Apache-2.0
+# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+
+name: Synchronise OSPO Workflows
+
+on:
+  pull_request:
+
+jobs:
+  synchronise-ospo-workflows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch GitHub App token for target repo (write)
+        id: target_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+
+      - name: Fetch GitHub App token for OSPO source repo (read-only)
+        id: ospo_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+          owner: National-Digital-Twin
+          repositories: ospo-resources
+          permission-contents: read
+
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.target_token.outputs.token }}
+
+      - name: Checkout OSPO source repository
+        uses: actions/checkout@v4
+        with:
+          repository: National-Digital-Twin/ospo-resources
+          path: ospo-resources
+          token: ${{ steps.ospo_token.outputs.token }}
+
+      - name: Copy and compare workflow files from OSPO repo
+        run: |
+          while IFS= read -r file || [ -n "$file" ]; do
+            # Skip comments and empty lines
+            if [[ -z "$file" || "$file" == \#* ]]; then
+              continue
+            fi
+
+            src="ospo-resources/$file"
+            filename="$(basename "$file")"
+            tgt=".github/workflows/$filename"
+
+            if [ ! -f "$src" ]; then
+              echo "WARNING: Source file not found in OSPO repository: $src"
+              continue
+            fi
+
+            mkdir -p "$(dirname "$tgt")"
+
+            if [ ! -f "$tgt" ]; then
+              echo "File missing in target repo: $tgt"
+              cp "$src" "$tgt"
+            elif ! cmp -s "$src" "$tgt"; then
+              echo "File differs and will be updated: $tgt"
+              cp "$src" "$tgt"
+            else
+              echo "File is already up to date: $tgt"
+            fi
+          done < ospo-resources/organisation-required-workflows.txt
+
+      - name: Check out pull request branch
+        run: |
+          git fetch origin ${{ github.head_ref }}
+          git checkout ${{ github.head_ref }}
+
+      - name: Auto-commit updated workflow files (if applicable)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat(OSPO): synchronise OSPO workflows"
+          commit_user_name: github-actions
+          commit_user_email: actions@github.com
+          file_pattern: .github/workflows/*
+          skip_fetch: true
+
+      - name: Check for file changes and fail if sync is not complete
+        run: |
+          if [ "$(git status --porcelain .github/workflows)" != "" ]; then
+            echo "Some workflow files were changed. Failing status check to block merge until sync is complete."
+            exit 1
+          else
+            echo "No changes required. All OSPO workflow files are in sync."
+          fi
+

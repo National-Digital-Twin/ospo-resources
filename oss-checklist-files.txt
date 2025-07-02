@@ -1,0 +1,13 @@
+# This file contains relative paths for files that will be checked to exist in support of OSS checklist activities.
+# File paths must be relative to the root of a repository.
+
+ACKNOWLEDGEMENTS.md
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+LICENSE.md
+MAINTAINERS.md
+NOTICE.md
+OGL_LICENCE.md
+README.md
+SECURITY.md
