@@ -32,9 +32,9 @@ NDTP does not accept public code contributions, but we welcome **bug reports and
 
 | Name              | Organisation           | Role               | Contact                |
 |-------------------|------------------------|--------------------|------------------------|
-| [Maintainer Name] | [NDTP / Supplier Name] | Lead Maintainer    | [NDTP-OSS@informed.com]|
-| [Maintainer Name] | [NDTP / Supplier Name] | Security Contact   | [NDTP-OSS@informed.com]|
-| [Maintainer Name] | [NDTP / Supplier Name] | Documentation Lead | [NDTP-OSS@informed.com]|
+| James Cruddas | Informed Solutions | Lead Maintainer    | [NDTP-OSS@informed.com]|
+| James Cruddas | Informed Solutions | Security Contact   | [NDTP-OSS@informed.com]|
+| James Cruddas | Informed Solutions | Documentation Lead | [NDTP-OSS@informed.com]|
 
 For general issues, please **open a GitHub issue** rather than contacting maintainers directly.  
 
@@ -45,7 +45,7 @@ For general issues, please **open a GitHub issue** rather than contacting mainta
 If you need to escalate an issue that has not been addressed within a reasonable time:  
 
 1. **Security vulnerabilities** – Follow the responsible disclosure process in [SECURITY.md](./SECURITY.md).  
-2. **Governance and policy queries** – Contact NDTP at **[ndtp@businessandtrade.gov.uk]**.  
+2. **Governance and policy queries** – Contact NDTP at **ospo@ndtp.co.uk**.  
 3. **Urgent operational issues** – If an issue affects critical systems, contact the **Lead Maintainer** listed above.  
 
 --
