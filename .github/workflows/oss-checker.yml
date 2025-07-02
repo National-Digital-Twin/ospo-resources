@@ -90,7 +90,7 @@ jobs:
             echo "All OSS files are present and customised."
           fi
 
-      - name: Check for pull request and issue template files
+      - name: Check GitHub template files are present
         run: |
           echo "Checking for pull request and issue template files"
 
@@ -110,11 +110,15 @@ jobs:
 
           if [ ${#missing_recommended[@]} -ne 0 ]; then
             echo ""
-            echo "Recommended template files not found:"
+            echo "Required GitHub template files not found:"
             printf '  - %s\n' "${missing_recommended[@]}"
             echo ""
             echo "These files help improve project collaboration and are considered best practice."
-            echo "Consider adding them to improve the developer experience."
+            echo "These need to be included in repository contents to improve the developer experience."
+
+            # Fail the job
+            echo "Missing required GitHub template files."
+            exit 1
           else
-            echo "All pull request and issue template files are present."
+            echo "Required pull request and issue template files present."
           fi
