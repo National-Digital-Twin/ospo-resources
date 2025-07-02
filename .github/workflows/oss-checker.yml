@@ -87,7 +87,7 @@ jobs:
             echo "OSS required file check failed."
             exit 1
           else
-            echo "All OSS files are present and customised."
+            echo "All OSS files are present and have been updated from their original templated content."
           fi
 
       - name: Check GitHub template files are present
