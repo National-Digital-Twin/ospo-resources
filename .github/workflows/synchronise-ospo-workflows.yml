@@ -92,3 +92,4 @@ jobs:
           else
             echo "No changes required. All OSPO workflow files are in sync."
           fi
+

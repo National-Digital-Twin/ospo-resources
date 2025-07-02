@@ -17,19 +17,20 @@ jobs:
 
           # Allow merging feature, hotfix, or bugfix into develop
           if [[ "$HEAD_BRANCH" =~ ^(feature/|hotfix/|bugfix/) && "$BASE_BRANCH" == "develop" ]]; then
-            echo "✅ Allowed: $HEAD_BRANCH → $BASE_BRANCH"
+            echo "Allowed: $HEAD_BRANCH → $BASE_BRANCH"
             exit 0
           fi
 
           # Allow merging release into main
           if [[ "$HEAD_BRANCH" =~ ^release/.*$ && "$BASE_BRANCH" == "main" ]]; then
-            echo "✅ Allowed: $HEAD_BRANCH → $BASE_BRANCH"
+            echo "Allowed: $HEAD_BRANCH → $BASE_BRANCH"
             exit 0
           fi
 
           # If none of the above conditions match, block the PR
-          echo "❌ Error: Invalid PR - '$HEAD_BRANCH' cannot be merged into '$BASE_BRANCH'."
-          echo "✅ Allowed merges:"
+          echo "Error: Invalid PR - '$HEAD_BRANCH' cannot be merged into '$BASE_BRANCH'."
+          echo "Allowed merges:"
           echo "  - feature/*, hotfix/*, bugfix/* → develop"
           echo "  - release/* → main"
           exit 1
+

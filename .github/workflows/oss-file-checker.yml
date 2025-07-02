@@ -5,10 +5,10 @@ name: Check for presence of OSS files
 
 on:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   oss-file-test:
-    if: ${{ github.event.repository.private == false }}
     runs-on: ubuntu-latest
 
     steps:

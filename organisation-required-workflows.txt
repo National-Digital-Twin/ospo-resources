@@ -3,3 +3,4 @@
 # automatically synchronised and committed to the source branch of the pull request.
 
 .github/workflows/publish-github-release.yml
+.github/workflows/oss-file-checker.yml

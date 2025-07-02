@@ -26,3 +26,4 @@ jobs:
             echo "Allowed prefixes: feature/, hotfix/, bugfix/, release/"
             exit 1
           fi
+
