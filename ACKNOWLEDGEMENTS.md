@@ -12,12 +12,6 @@ Over time, the following organisations have provided technical expertise, develo
 
 - Informed Solutions
 
-<!--
-
-GUIDANCE: IN PLACE OF THE ABOVE LIST, PROVIDE THE ACTUAL SUPPLIER/ORGANISATION DETAILS THAT ARE RELEVANT TO THE REPOSITORY
- 
- -->
-
 We are grateful for the collaboration that has helped shape this repository.
 
 ## Individual contributions
