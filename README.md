@@ -8,11 +8,58 @@
 
 This repository contains technical resources produced by the NDTP Open Source Project Office (OSPO) for programme contributors. It includes reusable GitHub Actions workflows and other resources to support OSPO’s technical needs and ensure consistency across programme repositories.
 
-## Prerequisites  
+## Prerequisites
 
-The only prerequisites to use the synchronise-ospo-workflows GitHub Action is that the target repository enrolled is in the National-Digital-Twin GitHub organisation.
+The contents maintained in this repository are designed for use with GitHub.
 
-### Pull Requests
+### Notes for external use
+
+If you wish to use these materials outside of the `National-Digital-Twin` organisation, please note that repository names used in the GitHub Actions files will require adjustment.
+
+## Using the `synchronise-ospo-workflows` GitHub Action
+
+To use the `synchronise-ospo-workflows` GitHub Action, a private GitHub application must be installed in your GitHub organisation. This is because the workflow requires `workflow:write` permissions to add content to the `.github/workflows` directory, which cannot currently be achieved using the [`GITHUB_TOKEN`](https://docs.github.com/en/actions/how-to/choose-the-permissions-for-the-github-token#permissions-for-the-github_token) authorisation context.
+
+Guidance on installing a GitHub application can be found here:  
+[Installing your own GitHub App](https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app)
+
+### Required GitHub App permissions
+
+The GitHub application must have the following **repository permissions**:
+
+1. `contents:read`  
+2. `contents:write`  
+3. `workflows:read`  
+4. `workflows:write`
+
+### Setting up secrets
+
+Once your GitHub application has been created, the `synchronise-ospo-workflows` action must be able to assume the identity of the application. To do this, two repository secrets are required:
+
+- `OSPO_WORKFLOW_APP_ID`  
+- `OSPO_WORKFLOW_PRIVATE_KEY`
+
+For ease of administration, these secrets can be set once as **organisation-level secrets**, with access delegated to trusted repositories, rather than adding them to each repository individually.
+
+Guidance on managing organisation secrets is available here:  
+[Creating and managing organisation secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-organization-secrets)
+
+### Granting repository access
+
+Assign repository access to your GitHub application for each trusted repository where you want to use the `synchronise-ospo-workflows` workflow.
+
+### Organisational repository ruleset
+
+To trigger the `synchronise-ospo-workflows` workflow when pull requests are made in repositories within your organisation, a [repository ruleset](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/creating-rulesets-for-repositories-in-your-organization) must be created with the following settings enabled:
+
+- **Require workflows to pass before merging**  
+- **Do not require workflows on creation**
+
+The workflow configuration section of the ruleset should reference the `synchronise-ospo-workflows` workflow found in the repository housing these assets.
+
+Because the status check is marked as *required* at the organisation level, the workflow will be triggered automatically - unlike with standard repository rulesets.
+
+## Pull Requests
 
 Any proposed changes to the main branch must be navigated via a Pull Request, which has been enforced using branch protection policies. Pull requests must include the details in the [PULL_REQUEST_TEMPLATE.md](./.github/PULL_REQUEST_TEMPLATE.md) file.
 
