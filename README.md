@@ -57,7 +57,7 @@ To trigger the `synchronise-ospo-workflows` workflow when pull requests are made
 
 The workflow configuration section of the ruleset should reference the `synchronise-ospo-workflows` workflow found in the repository housing these assets.
 
-Because the status check is marked as *required* at the organisation level, the workflow will be triggered automatically—unlike with standard repository rulesets.
+Because the status check is marked as *required* at the organisation level, the workflow will be triggered automatically - unlike with standard repository rulesets.
 
 ## Pull Requests
 
