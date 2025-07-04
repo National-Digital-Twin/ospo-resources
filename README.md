@@ -18,7 +18,7 @@ If you wish to use these materials outside of the `National-Digital-Twin` organi
 
 ## Using the `synchronise-ospo-workflows` GitHub Action
 
-To use the `synchronise-ospo-workflows` GitHub Action, a private GitHub application must be installed in your GitHub organisation. This is because the workflow requires `workflow:write` permissions to add content to the `.github/workflows` directory, which cannot currently be achieved using the [`GITHUB_TOKEN`](https://docs.github.com/en/actions/how-to/choose-the-permissions-for-the-github-token#permissions-for-the-github_token) authorisation context.
+To use the `synchronise-ospo-workflows` GitHub Action, a private GitHub application must be installed in your GitHub organisation. This is because the workflow requires `workflow:write` permissions to add content to the `.github/workflows` directory, which cannot currently be achieved using the [`GITHUB_TOKEN`](https://docs.github.com/en/actions/how-tos/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token) authorisation context.
 
 Guidance on installing a GitHub application can be found here:  
 [Installing your own GitHub App](https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app)
