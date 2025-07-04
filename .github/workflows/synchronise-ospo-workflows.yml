@@ -18,16 +18,6 @@ jobs:
           app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
           private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
 
-      - name: Fetch GitHub App token for OSPO source repo (read-only)
-        id: ospo_token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
-          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
-          owner: National-Digital-Twin
-          repositories: ospo-resources
-          permission-contents: read
-
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
@@ -38,7 +28,6 @@ jobs:
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
-          token: ${{ steps.ospo_token.outputs.token }}
 
       - name: Copy and compare workflow files from OSPO repo
         run: |
