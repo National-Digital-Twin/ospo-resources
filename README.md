@@ -1,7 +1,7 @@
 # README  
 
 **Repository:** `ospo-resources`  
-**Description:** `This repository contains technical resources created by the NDTP Open Source Project Office (OSPO) for programme contributors.`  
+**Description:** `This repository contains technical resources created by the NDTP Open Source Program Office (OSPO) for contributors.`  
 **SPDX-License-Identifier:** `Apache-2.0 AND OGL-UK-3.0 `  
 
 ## Overview  
