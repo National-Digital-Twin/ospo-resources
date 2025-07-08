@@ -26,6 +26,17 @@ esac
 read -p "Enter the target branch for Dependabot PRs [default: develop]: " target_branch
 target_branch=${target_branch:-develop}
 
+read -p "Enable major version patching? (yes/no) [default: yes]: " allow_major
+allow_major=${allow_major:-yes}
+
+case "$allow_major" in
+  yes|no) ;;
+  *)
+    echo "Invalid input. Use 'yes' or 'no'."
+    exit 1
+    ;;
+esac
+
 # Output file path
 mkdir -p .github
 output_file=".github/dependabot-proposed.yml"
@@ -44,11 +55,13 @@ version: 2
 updates:
 EOF
 
-# Function to add a Dependabot job
+# Function to add a package ecosystem to the Dependabot configuration
 add_dependabot_ecosystem() {
   local ecosystem="$1"
   local directory="$2"
   local group="$3"
+
+  echo "" >> "$output_file"  # Add a blank line before each entry
 
   cat >> "$output_file" <<EOF
   - package-ecosystem: "$ecosystem"
@@ -61,6 +74,16 @@ add_dependabot_ecosystem() {
         patterns:
           - "*"
 EOF
+
+  if [[ "$allow_major" == "no" ]]; then
+    cat >> "$output_file" <<EOF
+    allow:
+      - dependency-type: "direct"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-type: "indirect"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+EOF
+  fi
 }
 
 # Excludes common directories
@@ -75,6 +98,7 @@ filtered_find() {
       -name env -o \
       -name target -o \
       -name .idea -o \
+      -name .m2 \
       -name .gradle \
     \) -prune -false -o -name "$1" -print
 }
@@ -91,6 +115,7 @@ python_dirs=$( (filtered_find "requirements.txt"; filtered_find "pyproject.toml"
 
 if [ -n "$python_dirs" ]; then
   echo "$python_dirs" | while IFS= read -r dir; do
+    [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "pip" "/$dir" "python-dependencies"
   done
 elif filtered_find "*.py" | grep -q .; then
@@ -102,6 +127,7 @@ fi
 if filtered_find "package.json" | grep -q .; then
   filtered_find "package.json" | while IFS= read -r pkg_path; do
     dir=$(dirname "$pkg_path" | sed 's|^\./||')
+    [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "npm" "/$dir" "js-dependencies"
   done
 fi
@@ -110,6 +136,7 @@ fi
 if filtered_find "pom.xml" | grep -q .; then
   filtered_find "pom.xml" | while IFS= read -r pom_path; do
     dir=$(dirname "$pom_path" | sed 's|^\./||')
+    [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "maven" "/$dir" "maven-dependencies"
   done
 fi
@@ -118,6 +145,7 @@ fi
 if filtered_find "Dockerfile*" | grep -q .; then
   filtered_find "Dockerfile*" | while IFS= read -r docker_path; do
     dir=$(dirname "$docker_path" | sed 's|^\./||')
+    [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "docker" "/$dir" "docker-dependencies"
   done
 fi
