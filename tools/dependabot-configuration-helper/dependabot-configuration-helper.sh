@@ -77,11 +77,9 @@ EOF
 
   if [[ "$allow_major" == "no" ]]; then
     cat >> "$output_file" <<EOF
-    allow:
-      - dependency-type: "direct"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
-      - dependency-type: "indirect"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+        update-types:
+          - "minor"
+          - "patch"
 EOF
   fi
 }
