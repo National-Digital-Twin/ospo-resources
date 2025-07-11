@@ -71,7 +71,7 @@ This repository has been developed with public funding as part of the National D
 
 ## License  
 This repository contains both source code and documentation, which are covered by different licenses:  
-- **Code:** Originally developed by the National Digital Twin Programme Open-Source Promgram Office for the National Digital Twin Programme. Licensed under the [Apache License 2.0](./LICENSE.md).  
+- **Code:** Originally developed by the National Digital Twin Programme Open-Source Program Office for the National Digital Twin Programme. Licensed under the [Apache License 2.0](./LICENSE.md).  
 - **Documentation:** Licensed under the [Open Government Licence v3.0](./OGL_LICENCE.md).  
 See `LICENSE.md`, `OGL_LICENCE.md`, and `NOTICE.md` for details.  
 

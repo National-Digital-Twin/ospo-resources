@@ -17,6 +17,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.90.1] – 2025-07-11 
+
+### Fixed 
+- Skip OSPO workflow synchronisation job for pull requests raised by Dependabot.
+
 ## [0.90.0] – 2025-06-23 
 
 ### Initial public release
