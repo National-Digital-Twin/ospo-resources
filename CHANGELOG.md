@@ -17,7 +17,7 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
-## [0.90.1] – 2025-07-11 
+## [0.91.0] – 2025-07-11 
 
 ### Added 
 - Helper to generate proposed Dependabot configurations based on ecosystem groups.
