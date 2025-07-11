@@ -1,6 +1,12 @@
 # Dependabot configuration helper script
 
-This script has been developed to assist with configuring Dependabot based on repository contents. It is an executable Bash script and must be used in a Linux environment.
+This script has been developed to assist with configuring Dependabot based on the contents of a repository. It is an executable Bash script and must be run in a Linux environment.
+
+The script generates a proposed configuration that uses [groups](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/optimizing-pr-creation-version-updates) to reduce the number of pull requests opened for a given ecosystem. This is beneficial for Dependabot pull requests, as it:
+
+- Lowers the number of GitHub Action minutes consumed (which helps reduce the carbon footprint),
+- Prevents an unmanageable number of pull requests from being raised, and
+- Allows patches to be applied and tested together via CI pipelines.
 
 Before running the script, ensure it has the appropriate execution permissions by running:
 
