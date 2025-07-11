@@ -17,6 +17,14 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.91.0] – 2025-07-11 
+
+### Added 
+- Helper to generate proposed Dependabot configurations based on ecosystem groups.
+
+### Fixed 
+- Skip OSPO workflow synchronisation job for pull requests raised by Dependabot.
+
 ## [0.90.0] – 2025-06-23 
 
 ### Initial public release
