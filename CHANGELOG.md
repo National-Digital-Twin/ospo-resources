@@ -17,7 +17,7 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
-## [0.91.1] – 2025-07-11 
+## [0.91.1] – 2025-07-16 
 
 ### Fixed 
 - Minor documentation corrections.
