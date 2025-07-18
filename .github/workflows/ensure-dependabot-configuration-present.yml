@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: Apache-2.0
+# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+
+name: Ensure Dependabot Configuration Present
+
+on:
+  pull_request:
+
+jobs:
+  add-dependabot-config:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for existing dependabot.yml
+        id: check_config
+        run: |
+          if [ -f ".github/dependabot.yml" ]; then
+            echo "configuration_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "configuration_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip if config configuration_exists
+        if: steps.check_config.outputs.configuration_exists == 'true'
+        run: echo "Dependabot configuration already present. No action needed."
+
+      - name: Checkout OSPO source repository
+        if: steps.check_config.outputs.configuration_exists == 'false'
+        uses: actions/checkout@v4
+        with:
+          repository: National-Digital-Twin/ospo-resources
+          path: ospo-resources
+
+      - name: Generate dependabot.yml
+        if: steps.check_config.outputs.configuration_exists == 'false'
+        working-directory: .
+        run: |
+          chmod +x ospo-resources/tools/dependabot-configuration-helper/dependabot-configuration-helper.sh
+          printf '\n\n\n' | ./ospo-resources/tools/dependabot-configuration-helper/dependabot-configuration-helper.sh
+          mv .github/dependabot-proposed.yml .github/dependabot.yml
+          sed '/#/d' .github/dependabot.yml > .github/dependabot.yml
+
+      - name: Auto-commit updated dependabot configuration (if applicable)
+        if: steps.check_config.outputs.configuration_exists == 'false'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat(OSPO): add dependabot configuration"
+          commit_user_name: github-actions
+          commit_user_email: actions@github.com
+          file_pattern: .github/dependabot.yml
+          skip_fetch: true
+
+      - name: Check for file changes and fail if dependabot configuration is not present
+        if: steps.check_config.outputs.configuration_exists == 'false'
+        run: |
+          if [ "$(git status --porcelain .github/dependabot.yml)" != "" ]; then
+            echo "Dependabot configuration not found."
+            exit 1
+          else
+            echo "Dependabot configuration present."
+          fi
