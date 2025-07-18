@@ -3,6 +3,9 @@
 
 name: Ensure Dependabot Configuration Present
 
+permissions:
+  contents: write
+
 on:
   pull_request:
 
