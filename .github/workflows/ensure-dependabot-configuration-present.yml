@@ -46,7 +46,7 @@ jobs:
           chmod +x ospo-resources/tools/dependabot-configuration-helper/dependabot-configuration-helper.sh
           printf '\n\n\n' | ./ospo-resources/tools/dependabot-configuration-helper/dependabot-configuration-helper.sh
           mv .github/dependabot-proposed.yml .github/dependabot.yml
-          sed '/#/d' .github/dependabot.yml > .github/dependabot.yml
+          sed -i '/#/d' .github/dependabot.yml
 
       - name: Auto-commit updated dependabot configuration (if applicable)
         if: steps.check_config.outputs.configuration_exists == 'false'
