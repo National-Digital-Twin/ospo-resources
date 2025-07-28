@@ -69,7 +69,6 @@ add_dependabot_ecosystem() {
     target-branch: "$target_branch"
     schedule:
       interval: "$frequency"
-    versioning-strategy: "increase"
     groups:
       $group:
         patterns:
