@@ -69,6 +69,7 @@ add_dependabot_ecosystem() {
     target-branch: "$target_branch"
     schedule:
       interval: "$frequency"
+    versioning-strategy: "increase"
     groups:
       $group:
         patterns:
@@ -77,9 +78,10 @@ EOF
 
   if [[ "$allow_major" == "no" ]]; then
     cat >> "$output_file" <<EOF
+    ignore:
+      - dependency-name: "*"
         update-types:
-          - "minor"
-          - "patch"
+          - "version-update:semver-major"
 EOF
   fi
 }
@@ -103,7 +105,7 @@ filtered_find() {
 
 # GitHub Actions
 if [ -d ".github/workflows" ]; then
-  add_dependabot_ecosystem "github-actions" "/" "actions-updates"
+  add_dependabot_ecosystem "github-actions" "/" "actions-dependencies"
 fi
 
 # Python: requirements.txt, pyproject.toml, Pipfile
