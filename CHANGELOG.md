@@ -17,7 +17,12 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
-## [0.91.1] – 2025-07-16 
+## [0.91.2] – 2025-07-28
+
+### Fixed 
+- Correct how dependabot helper tool ignores semver major updates if opted out.
+
+## [0.91.1] – 2025-07-16
 
 ### Fixed 
 - Minor documentation corrections.
