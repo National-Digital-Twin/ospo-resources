@@ -65,6 +65,8 @@ Any proposed changes to the main branch must be navigated via a Pull Request, wh
 ## Features  
 
 - **Reusable GitHub Actions for utility tasks** 
+- **Dependabot configuration helper** 
+- **Centralised Pull request labelling solution** 
 
 ## Public Funding Acknowledgment  
 This repository has been developed with public funding as part of the National Digital Twin Programme (NDTP), a UK Government initiative. NDTP, alongside its partners, has invested in this work to advance open, secure, and reusable digital twin technologies for any organisation, whether from the public or private sector, irrespective of size.  
