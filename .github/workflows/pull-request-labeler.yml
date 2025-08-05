@@ -5,19 +5,16 @@ name: "Pull Request Labeler"
 on:
   - pull_request_target
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
   labeler:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout OSPO source repository
         uses: actions/checkout@v4
