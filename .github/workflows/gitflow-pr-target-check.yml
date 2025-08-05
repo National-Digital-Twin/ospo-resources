@@ -8,6 +8,7 @@ on:
 
 jobs:
   pr-target-check:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Check merge target

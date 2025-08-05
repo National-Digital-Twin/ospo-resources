@@ -17,6 +17,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.91.3] – 2025-08-05
+
+### Fixed 
+- Skip PR target check if pull request is raised by Dependabot to avoid workflow hangs.
+
 ## [0.91.2] – 2025-07-28
 
 ### Fixed 
