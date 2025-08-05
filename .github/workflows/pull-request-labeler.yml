@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: Apache-2.0
+# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+
+name: "Pull Request Labeler"
+on:
+  - pull_request_target
+
+jobs:
+  labeler:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+
+      - name: Checkout OSPO source repository
+        uses: actions/checkout@v4
+        with:
+          repository: National-Digital-Twin/ospo-resources
+          path: ospo-resources
+
+      # Check for the presence of the labeler configuration file in the target repository and use it if available, otherwise 
+      # fall back to the OSPO resources labeler configuration file.
+      - name: Choose labeler config
+        id: labeler-configuration-file-location
+        run: |
+          if [ -f .github/labeler.yml ]; then
+            echo "config=.github/labeler.yml" >> $GITHUB_OUTPUT
+          else
+            echo "config=ospo-resources/.github/labeler.yml" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Apply labels
+        uses: actions/labeler@v5
+        with:
+          configuration-path: ${{ steps.labeler-configuration-file-location.outputs.config }}
