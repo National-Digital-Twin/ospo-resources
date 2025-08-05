@@ -22,12 +22,11 @@ jobs:
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
-          ref: 'feature/labeler'
 
       # Check for the presence of the labeler configuration file in the target repository and use it if available, otherwise 
       # fall back to the OSPO resources labeler configuration file.
       - name: Choose labeler config
-        id: pick
+        id: labeler-configuration-file-location
         run: |
           if [ -f .github/labeler.yml ]; then
             echo "config=.github/labeler.yml" >> $GITHUB_OUTPUT
@@ -38,4 +37,4 @@ jobs:
       - name: Apply labels
         uses: actions/labeler@v5
         with:
-          configuration-path: ${{ steps.pick.outputs.config }}
+          configuration-path: ${{ steps.labeler-configuration-file-location.outputs.config }}
