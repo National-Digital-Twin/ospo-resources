@@ -17,6 +17,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.92.0] – 2025-08-05
+
+### Added 
+- Add solution for automated pull request labelling.
+
 ## [0.91.3] – 2025-08-05
 
 ### Fixed 
