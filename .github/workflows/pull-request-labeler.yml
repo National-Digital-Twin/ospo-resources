@@ -24,6 +24,7 @@ jobs:
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
+          ref: 'feature/labeler'
 
       # Check for the presence of the labeler configuration file in the target repository and use it if available, otherwise 
       # fall back to the OSPO resources labeler configuration file.
