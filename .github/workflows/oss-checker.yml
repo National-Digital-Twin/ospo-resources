@@ -6,6 +6,9 @@ name: Run OSS check helper
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   oss-checks:
     runs-on: ubuntu-latest
@@ -30,19 +33,19 @@ jobs:
           permission-contents: read
 
       - name: Checkout target repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ steps.target_token.outputs.token }}
 
       - name: Checkout OSPO source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
           token: ${{ steps.ospo_token.outputs.token }}
 
       - name: Checkout archetypes source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: National-Digital-Twin/archetypes
           path: archetypes

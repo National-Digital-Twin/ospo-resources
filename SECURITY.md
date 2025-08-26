@@ -25,7 +25,7 @@ If you believe you have found a security vulnerability in this repository, **ple
 
 ### **How to Report a Security Issue** 
 
-1. **Do not open a public issue on GitHub.** Instead, report security concerns via email to **[ndtp@businessandtrade.gov.uk]**. 
+1. **Do not open a public issue on GitHub.** Instead, report security concerns via email to ndtp@businessandtrade.gov.uk. 
 2. **Provide detailed information about the vulnerability**, including: 
    - A clear description of the issue. 
    - Steps to reproduce the vulnerability. 
@@ -61,8 +61,6 @@ To help maintain security across NDTP repositories, we follow these principles:
 - Dependencies are **scanned and updated regularly** (e.g., using automated tools like Dependabot). 
 - Sensitive credentials **must not be included** in public repositories. 
 - Security patches are applied in a timely manner, with priority given to critical vulnerabilities. 
-
-For more details, refer to our **Secure Development Guidelines** [Link to internal security policy, if available]. 
 
 ---
 

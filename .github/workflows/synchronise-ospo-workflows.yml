@@ -20,12 +20,12 @@ jobs:
           private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
 
       - name: Checkout target repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ steps.target_token.outputs.token }}
 
       - name: Checkout OSPO source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
