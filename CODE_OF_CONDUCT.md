@@ -41,7 +41,7 @@ The following behaviour will not be tolerated:
 
 If you believe someone is violating this Code of Conduct, please report it by following these steps: 
 
-1. **For general issues** – Raise a concern with the repository maintainers by emailing [NDTP Support Email]. 
+1. **For general issues** – Raise a concern with the repository maintainers by emailing ndtp@businessandtrade.gov.uk. 
 2. **For security-related concerns** – Follow the responsible disclosure process outlined in [SECURITY.md] (./SECURITY.md). 
 3. **For incidents requiring escalation** – NDTP reserves the right to take appropriate action, including restricting access to contributors who violate this policy. 
 

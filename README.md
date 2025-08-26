@@ -87,7 +87,7 @@ We welcome contributions that align with the Programme’s objectives. Please re
 This repository has benefited from collaboration with various organisations. For a list of acknowledgments, see [`ACKNOWLEDGEMENTS.md`](./ACKNOWLEDGEMENTS.md).  
 
 ## Support and Contact  
-For questions or support, check our Issues or contact the NDTP team on ndtp@businessandtrade.gov.uk.
+For questions or support, check our Issues or contact the NDTP team by emailing ndtp@businessandtrade.gov.uk.
 
 **Maintained by the National Digital Twin Programme (NDTP).**  
 
