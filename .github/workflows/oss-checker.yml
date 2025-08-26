@@ -6,6 +6,9 @@ name: Run OSS check helper
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   oss-checks:
     runs-on: ubuntu-latest
