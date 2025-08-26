@@ -17,6 +17,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.92.1] – 2025-08-26
+
+### Fixed 
+- Minor documentation corrections and patch GitHub Actions upload and download artefact steps to v5.
+
 ## [0.92.0] – 2025-08-05
 
 ### Added 
