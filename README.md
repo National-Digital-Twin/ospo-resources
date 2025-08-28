@@ -2,7 +2,7 @@
 
 **Repository:** `ospo-resources`  
 **Description:** `This repository contains technical resources created by the NDTP Open Source Program Office (OSPO) for contributors.`  
-**SPDX-License-Identifier:** `Apache-2.0 AND OGL-UK-3.0 `  
+**SPDX-License-Identifier:** `Apache-2.0 AND OGL-UK-3.0`  
 
 ## Overview  
 
@@ -67,7 +67,7 @@ Any proposed changes to the main branch must be navigated via a Pull Request, wh
 - **Reusable GitHub Actions for utility tasks**
     - [gitflow-pr-target-check.yml](.github/workflows/gitflow-pr-target-check.yml) - this action checks target branches of pull requests align with conventions of the GitFlow branching strategy
     -  [publish-github-release.yml](.github/workflows/publish-github-release.yml) - this automatically generates a Software Bill of Materials (SBOM) and attaches it to a new GitHub release when a release/* branch gets merged to main.
-- **Dependabot configuration helper** - see [dependabot-configuration-helper](./tools/dependabot-configuration-helper)
+- **Dependabot configuration helper** - creates draft groups for optimising dependabot configurations based on repository contents. Please see [dependabot-configuration-helper](./tools/dependabot-configuration-helper) for further details.
 - **Centralised Pull request labelling solution** - labels pull requests using the https://github.com/actions/labeler GitHub Action. An base configuration for use with GitFlow can be found at [labeler.yml](./.github/workflows/pull-request-labeler.yml).
 - **SBOM aggregation tool** - an automation solution for generating and grouping Software Bill of Materials for all repositories in a GitHub organisation. Please see [sbom-aggregation](./tools/sbom-aggregation).
 
