@@ -32,9 +32,9 @@ NDTP does not accept public code contributions, but we welcome **bug reports and
 
 | Name              | Organisation           | Role               | Contact                |
 |-------------------|------------------------|--------------------|------------------------|
-| James Cruddas | Informed Solutions | Lead Maintainer    | [NDTP-OSS@informed.com]|
-| James Cruddas | Informed Solutions | Security Contact   | [NDTP-OSS@informed.com]|
-| James Cruddas | Informed Solutions | Documentation Lead | [NDTP-OSS@informed.com]|
+| James Cruddas     | Informed Solutions     | Lead Maintainer    | [NDTP-OSS@informed.com]|
+| James Cruddas     | Informed Solutions     | Security Contact   | [NDTP-OSS@informed.com]|
+| James Cruddas     | Informed Solutions     | Documentation Lead | [NDTP-OSS@informed.com]|
 
 For general issues, please **open a GitHub issue** rather than contacting maintainers directly.  
 

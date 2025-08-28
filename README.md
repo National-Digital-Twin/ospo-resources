@@ -64,9 +64,12 @@ Any proposed changes to the main branch must be navigated via a Pull Request, wh
 
 ## Features  
 
-- **Reusable GitHub Actions for utility tasks** 
-- **Dependabot configuration helper** 
-- **Centralised Pull request labelling solution** 
+- **Reusable GitHub Actions for utility tasks**
+    - [gitflow-pr-target-check.yml](.github/workflows/gitflow-pr-target-check.yml) - this action checks target branches of pull requests align with conventions of the GitFlow branching strategy
+    -  [publish-github-release.yml](.github/workflows/publish-github-release.yml) - this automatically generates a Software Bill of Materials (SBOM) and attaches it to a new GitHub release when a release/* branch gets merged to main.
+- **Dependabot configuration helper** - see [dependabot-configuration-helper](./tools/dependabot-configuration-helper)
+- **Centralised Pull request labelling solution** - labels pull requests using the https://github.com/actions/labeler GitHub Action. An base configuration for use with GitFlow can be found at [labeler.yml](./.github/workflows/pull-request-labeler.yml).
+- **SBOM aggregation tool** - an automation solution for generating and grouping Software Bill of Materials for all repositories in a GitHub organisation. Please see [sbom-aggregation](./tools/sbom-aggregation).
 
 ## Public Funding Acknowledgment  
 This repository has been developed with public funding as part of the National Digital Twin Programme (NDTP), a UK Government initiative. NDTP, alongside its partners, has invested in this work to advance open, secure, and reusable digital twin technologies for any organisation, whether from the public or private sector, irrespective of size.  
