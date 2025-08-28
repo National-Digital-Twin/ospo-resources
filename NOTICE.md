@@ -11,9 +11,9 @@ This repository contains software developed as part of the National Digital Twin
 ## License  
 This repository contains **both source code and documentation**, each covered by different licenses:  
 - **Code**: Licensed under the **[Apache License 2.0](./LICENSE.md)**.  
-- **Documentation**: Licensed under the **[Open Government Licence v3.0 (OGL-UK-3.0)](./OGL_LICENCE.md)**.  
+- **Documentation**: Licensed under the **[Open Government Licence v3.0 (OGL-UK-3.0)](./OGL_LICENSE.md)**.  
 
-See [`LICENSE.md`](LICENSE.md) and [`OGL_LICENCE.md`](OGL_LICENCE.md) for details.
+See [`LICENSE.md`](LICENSE.md) and [`OGL_LICENSE.md`](OGL_LICENSE.md) for details.
 
 This project has been developed to support NDTP’s mission of enabling  secure, scalable, and interoperable data-sharing across organisations.  
 
