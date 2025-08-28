@@ -64,6 +64,8 @@ Any proposed changes to the main branch must be navigated via a Pull Request, wh
 
 ## Features  
 
+- **Workflow distribution solution**
+    - [synchronise-ospo-workflows.yml](./.github/workflows/synchronise-ospo-workflows.yml) - this action can be used to distribute GitHub Actions across repositories in a GitHub organisation, using organisation-level repository rulesets.
 - **Reusable GitHub Actions for utility tasks**
     - [gitflow-pr-target-check.yml](.github/workflows/gitflow-pr-target-check.yml) - this action checks target branches of pull requests align with conventions of the GitFlow branching strategy
     -  [publish-github-release.yml](.github/workflows/publish-github-release.yml) - this automatically generates a Software Bill of Materials (SBOM) and attaches it to a new GitHub release when a release/* branch gets merged to main.

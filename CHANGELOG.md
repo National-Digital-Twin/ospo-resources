@@ -21,7 +21,7 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ### Added 
 - Add solution for generating Software Bill of Materials (SBOMs) for all repositories in a GitHub organisation. Please see [sbom-aggregation](./tools/sbom-aggregation/README.md).
-- Updated [README.md](./README.md) feature list section to clarify purpose and location of tools housed in the repository.
+- Updated [README.md](./README.md) to help clarify the purpose and location of tools housed in this repository.
 
 ## [0.92.1] – 2025-08-26
 
