@@ -17,6 +17,12 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.93.0] – 2025-08-28
+
+### Added 
+- Add solution for generating Software Bill of Materials (SBOMs) for all repositories in a GitHub organisation. Please see [sbom-aggregation](./tools/sbom-aggregation/README.md).
+- Updated [README.md](./README.md) to help clarify the purpose and location of tools housed in this repository.
+
 ## [0.92.1] – 2025-08-26
 
 ### Fixed 
@@ -25,7 +31,7 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 ## [0.92.0] – 2025-08-05
 
 ### Added 
-- Add solution for automated pull request labelling.
+- Add solution for automated pull request labelling. Please see [pull-request-labeler.yml](./.github/workflows/pull-request-labeler.yml).
 
 ## [0.91.3] – 2025-08-05
 
@@ -96,4 +102,4 @@ Once `1.0.0` is reached, future versions will follow **strict SemVer rules**.
 
 Licensed under the Open Government Licence v3.0. 
 
-For full licensing terms, see [OGL_LICENCE.md](OGL_LICENCE.md).
+For full licensing terms, see [OGL_LICENSE.md](OGL_LICENSE.md).
