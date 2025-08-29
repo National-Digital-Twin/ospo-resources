@@ -35,7 +35,7 @@ Carefully consider repository visibility:
 - **Private repositories**: Recommended if your organisation has many private codebases, as it avoids the need to maintain a long `REPOSITORIES_TO_IGNORE` list and prevents SBOM artefacts for private resources from being exposed.
 
 ### 2. Install a GitHub Application
-As with the `synchronise-ospo-workflows` tool described in this repository's [README.md](../../README.md), a private GitHub application must be installed in your GitHub organisation. This is required for the action to authenticate at the organisational level.
+As with the `synchronise-ospo-workflows` tool described in this repository's [README.md](https://github.com/National-Digital-Twin/ospo-resources/blob/main/README.md), a private GitHub application must be installed in your GitHub organisation. This is required for the action to authenticate at the organisational level.
 
 ### 3. Configure Workflow File
 Adjust the [sbom-aggregation.yml](.github/workflows/sbom-aggregation.yml) workflow file:  
