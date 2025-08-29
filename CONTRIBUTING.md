@@ -121,4 +121,4 @@ NDTP repository maintainers review reported issues, evaluate documentation sugge
 
 Licensed under the Open Government Licence v3.0.  
 
-For full licensing terms, see [OGL_LICENCE.md](./OGL_LICENCE.md)
+For full licensing terms, see [OGL_LICENSE.md](./OGL_LICENSE.md)

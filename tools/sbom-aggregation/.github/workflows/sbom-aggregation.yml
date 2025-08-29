@@ -1,0 +1,173 @@
+# SPDX-License-Identifier: Apache-2.0
+# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+
+name: Generate SPDX SBOMs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # every Sunday at 00:00 UTC  
+
+jobs:
+  generate-sboms:
+    runs-on: ubuntu-latest
+    env:
+      ORG_NAME: <<Replace with GitHub Organisation Name, for example: National-Digital-Twin>>
+      API_URL: https://api.github.com
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y jq
+          python3 -m pip install --upgrade pip setuptools
+          pip install --cache-dir ~/.cache/pip -r requirements.txt
+          sudo apt update
+          sudo apt install -y gh
+
+      - name: Get GitHub App token
+        id: app_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+          owner: ${{ env.ORG_NAME }}
+
+      - name: Fetch repositories
+        id: get_repos
+        run: |
+          IGNORE_LIST="${{ secrets.REPOSITORIES_TO_IGNORE }}"
+          IFS=',' read -r -a IGNORE_REPOS <<< "${IGNORE_LIST:-}"
+          declare -A IGNORE_MAP
+          for repo in "${IGNORE_REPOS[@]}"; do
+            IGNORE_MAP["$repo"]=1
+          done
+
+          repos=""
+          archived_repos=""
+          page=1
+
+          while : ; do
+            result=$(curl -sSL \
+              -H "Authorization: Bearer ${{ steps.app_token.outputs.token }}" \
+              -H "Accept: application/vnd.github+json" \
+              "$API_URL/orgs/$ORG_NAME/repos?type=all&per_page=100&page=$page")
+
+            active_repositories=$(echo "$result" | jq -r '.[] | select(.archived == false) | .name')
+            current_archived=$(echo "$result" | jq -r '.[] | select(.archived == true) | .name')
+
+            if [[ -z "$active_repositories" && -z "$current_archived" ]]; then
+              break
+            fi
+
+            for repo in $active_repositories; do
+              if [[ -z "${IGNORE_MAP[$repo]}" ]]; then
+                repos="$repos"$'\n'"$repo"
+              fi
+            done
+
+            archived_repos="$archived_repos"$'\n'"$current_archived"
+            page=$((page + 1))
+          done
+
+          total=$(echo "$repos" | grep -c . || true)
+          echo "Fetched $total active (non-archived) repositories"
+
+          if [[ -n "$archived_repos" ]]; then
+            echo "Skipped archived repositories:"
+            echo "$archived_repos"
+          fi
+
+          echo "REPOS<<EOF" >> $GITHUB_ENV
+          echo "$repos" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Generate SBOMs
+        run: |
+          mkdir -p sboms/ungrouped
+
+          for repo in $REPOS; do
+            echo "Generating SBOM for $repo"
+
+            response_file=$(mktemp)
+            status_code=$(curl -sSL -w "%{http_code}" -o "$response_file" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ steps.app_token.outputs.token }}" \
+              "$API_URL/repos/$ORG_NAME/$repo/dependency-graph/sbom")
+
+            if [[ "$status_code" -ne 200 ]]; then
+              echo "Error: Failed to fetch SBOM for $repo (HTTP $status_code)"
+              cat "$response_file"
+              rm "$response_file"
+              exit 1
+            fi
+
+            sbom_content=$(jq '.sbom' "$response_file")
+            rm "$response_file"
+
+            if [[ "$sbom_content" == "null" ]]; then
+              echo "SBOM generation failed or dependency graph not enabled for $repo"
+              exit 1
+            fi
+
+            echo "$sbom_content" > "sboms/ungrouped/${repo}.spdx.json"
+
+            # Add delay to avoid hitting GitHub's secondary rate limit
+            sleep 2
+          done
+
+      - name: Group and merge SBOMs
+        run: |
+          mkdir -p sboms/ungrouped
+
+          # Convert YAML to JSON for jq
+          python3 -c 'import sys, yaml, json; json.dump(yaml.safe_load(sys.stdin), sys.stdout)' < groups.yml > groups.json
+
+          declared=$(jq -r '.groups | keys[]' groups.json)
+          all_sboms=$(find sboms/ungrouped -name '*.spdx.json' | xargs -n1 basename | sed 's/\.spdx\.json//')
+
+          grouped_repos=""
+
+          for group in $declared; do
+            mkdir -p "sboms/$group"
+            repos=$(jq -r ".groups[\"$group\"][]" groups.json)
+
+            for repo in $repos; do
+              grouped_repos="$grouped_repos $repo"
+              src="sboms/ungrouped/${repo}.spdx.json"
+              if [[ -f "$src" ]]; then
+                cp "$src" "sboms/$group/"
+              else
+                echo "Warning: SBOM for $repo not found"
+              fi
+            done
+
+            files=$(find sboms/"$group" -name '*.spdx.json' | xargs)
+            if [[ -n "$files" ]]; then
+              python3 merge_sboms.py sboms/"$group"/merged-sbom.spdx.json $files
+            fi
+          done
+
+          # Remove grouped SBOMs from ungrouped folder
+          for repo in $all_sboms; do
+            if [[ " $grouped_repos " =~ " $repo " ]]; then
+              rm -f "sboms/ungrouped/${repo}.spdx.json"
+            fi
+          done
+
+      - name: Upload SBOM artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sboms
+          path: sboms/
+

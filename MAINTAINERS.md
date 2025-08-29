@@ -32,9 +32,9 @@ NDTP does not accept public code contributions, but we welcome **bug reports and
 
 | Name              | Organisation           | Role               | Contact                |
 |-------------------|------------------------|--------------------|------------------------|
-| James Cruddas | Informed Solutions | Lead Maintainer    | [NDTP-OSS@informed.com]|
-| James Cruddas | Informed Solutions | Security Contact   | [NDTP-OSS@informed.com]|
-| James Cruddas | Informed Solutions | Documentation Lead | [NDTP-OSS@informed.com]|
+| James Cruddas     | Informed Solutions     | Lead Maintainer    | [NDTP-OSS@informed.com]|
+| James Cruddas     | Informed Solutions     | Security Contact   | [NDTP-OSS@informed.com]|
+| James Cruddas     | Informed Solutions     | Documentation Lead | [NDTP-OSS@informed.com]|
 
 For general issues, please **open a GitHub issue** rather than contacting maintainers directly.  
 
@@ -62,5 +62,5 @@ Maintainer details may change over time. If you are an NDTP-approved maintainer 
 
 Licensed under the Open Government Licence v3.0.  
 
-For full licensing terms, see [OGL_LICENCE.md](./OGL_LICENCE.md).
+For full licensing terms, see [OGL_LICENSE.md](./OGL_LICENSE.md).
 
