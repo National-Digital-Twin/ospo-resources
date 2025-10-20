@@ -17,6 +17,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.94.0] – 2025-10-20
+
+### Added 
+- Add deployment resources and documentation for credential scanning using [TruffleHog OSS](https://github.com/trufflesecurity/trufflehog).
+
 ## [0.93.0] – 2025-08-28
 
 ### Added 
