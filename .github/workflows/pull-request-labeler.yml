@@ -35,6 +35,6 @@ jobs:
           fi
 
       - name: Apply labels
-        uses: actions/labeler@v5
+        uses: actions/labeler@v6
         with:
           configuration-path: ${{ steps.labeler-configuration-file-location.outputs.config }}
