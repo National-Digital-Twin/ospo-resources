@@ -1,0 +1,18 @@
+#!/bin/bash
+if [[ ! -e credential-scan-exclusions.txt ]]; then
+    echo "# File contents should include line separated regex filepaths (analagous to a gitignore file)" > credential-scan-exclusions.txt
+fi
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    docker run --rm -v ${PWD}:/opt trufflesecurity/trufflehog:latest git file:///opt --since-commit HEAD --only-verified --fail --exclude-paths /opt/credential-scan-exclusions.txt
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    docker run --rm -v ${PWD}:/opt trufflesecurity/trufflehog:latest git file:///opt --since-commit HEAD --only-verified --fail --exclude-paths /opt/credential-scan-exclusions.txt
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+    docker run --rm -v $(pwd -W):/opt trufflesecurity/trufflehog:latest git file:///opt --since-commit HEAD --only-verified --fail --exclude-paths /opt/credential-scan-exclusions.txt
+elif [[ "$OSTYPE" == "msys" ]]; then
+    docker run --rm -v $(pwd -W):/opt trufflesecurity/trufflehog:latest git file:///opt --since-commit HEAD --only-verified --fail --exclude-paths /opt/credential-scan-exclusions.txt
+elif [[ "$OSTYPE" == "win32" ]]; then
+    docker run --rm -v $(pwd -W):/opt trufflesecurity/trufflehog:latest git file:///opt --since-commit HEAD --only-verified --fail --exclude-paths /opt/credential-scan-exclusions.txt
+else
+    echo "Unknown operating system: $OSTYPE"
+fi
