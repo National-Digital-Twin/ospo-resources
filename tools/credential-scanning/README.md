@@ -5,24 +5,24 @@ The files in this directory provide configuration and deployment resources for r
 
 ### Local Use Requirements
 
-The pre-commit solution included in this repository requires all users have docker installed on their development environment.
+The pre-commit solution included in this repository requires all users have docker installed on their local development environment.
 
 ### Local Use setup and use
 
-To help avoid sensitive credentials being deposited to source control, a pre-configured git pre-commit hook has been included in this repository. You can enable this feature for a repository by copying the .githooks folder to the root of your repository. Once there, you can be register the helper by running the command `git config --global core.hooksPath .githooks/`. Alternatively, the command `make git-credential-config` can be run if Make is installed.
+To help avoid sensitive credentials being deposited to source control, a pre-configured git pre-commit hook (used for local environmnets only) has been included in this repository. You can enable this feature for a repository by copying the .githooks folder to the root of your repository. Once there, you can be register the helper by running the command `git config --global core.hooksPath .githooks/`. Alternatively, the command `make git-credential-config` can be run if Make is installed.
 
 When staging content for a commit, files will be automatically scanned and if credentials verified, the commit will be aborted.
 
 ### GitHub Action
-The [credential-scan.yml](./credential-scan.yml) file is designed for use with GitHub Actions. The only prerequisite is that your source code is managed on GitHub. To deploy this action, place the file in your repository’s `.github/workflows` directory. Alternatively, you can host a central repository and apply a repository ruleset (using the branch ruleset type), enable the “Require workflows to pass before merging” setting, and reference the `credential-scan.yml` action.
+The [credential-scan.yml](./credential-scan.yml) file is designed for use with GitHub Actions. The only prerequisite is that your source code is managed on GitHub. To deploy this action, place the file in your repository’s `.github/workflows` directory. Alternatively, you can host a central repository and apply a repository ruleset (using the branch ruleset type), enable the "Require workflows to pass before merging" setting, and reference the `credential-scan.yml` action.
 
 ### Makefile content
 
-A shorthand for running credential scans manually at any time is included in this solution's source. To trigger a git (verified only) scan, run the command `make credential-scan-git-verified`. Please see Makefile contents for other supported scan types.
+A shorthand for running credential scans manually at any time is included in this solution's source. To trigger a git (verified only) scan, run the command `make credential-scan-git-verified`. Please see [Makefile](./Makefile) contents for other supported scan types.
 
 ### Filtering false positives
 
-On issuing the `make git-credential-config` command, a `credential-scan-exclusions.txt` file will be created in the root of your repository directory (if it does not already exist). If a .gitignore file is found in the repository root, this will be used as the template with newlines removed. Regex filepaths can then be added to this file (newline separated) to filter out false positives on a git commit command being issued.
+On issuing the `make git-credential-config` command, a `credential-scan-exclusions.txt` file will be created in the root of your repository directory (if it does not already exist). This file can be populated using the same syntax as .gitignore files to intentionally exclude false positives.
 
 ## Public Funding Acknowledgment  
 This repository has been developed with public funding as part of the National Digital Twin Programme (NDTP), a UK Government initiative. NDTP, alongside its partners, has invested in this work to advance open, secure, and reusable digital twin technologies for any organisation, whether from the public or private sector, irrespective of size.  
