@@ -7,7 +7,7 @@
 
 This tool provides a solution for generating and grouping Software Bill of Materials (SBOMs) for all repositories in a GitHub organisation.
 
-It uses the GitHub Dependency Graph API to export SPDX 2.3–compliant JSON SBOM documents, and the [official SPDX Python toolkit](https://github.com/spdx/tools-python) to merge them. This enables a consolidated view of dependencies for applications that are distributed across multiple repositories.
+It uses the GitHub Dependency Graph API to export SPDX 2.3-compliant JSON SBOM documents, and the [official SPDX Python toolkit](https://github.com/spdx/tools-python) to merge them. This enables a consolidated view of dependencies for applications that are distributed across multiple repositories.
 
 SBOM files produced by the tool are then uploaded to the GitHub Actions workflow run as an artefact, where they can be downloaded in a single zip file.
 
