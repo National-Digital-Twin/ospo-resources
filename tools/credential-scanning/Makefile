@@ -16,14 +16,14 @@ ifeq (,$(wildcard credential-scan-exclusions.txt))
 	echo "# File contents should include line separated regex filepaths (analagous to a gitignore file)" > credential-scan-exclusions.txt
 endif
 
-credential-scan-git-verified:
+credential-scan-verified:
 	docker run --rm -it -v $(PWD):/opt trufflesecurity/trufflehog:latest git file:///opt --only-verified --fail
 
-credential-scan-git-unverified:
-	docker run --rm -it -v $(PWD):/opt trufflesecurity/trufflehog:latest git file:///opt --fail --exclude-paths /opt/credential-scan-exclusions.txt
+credential-scan-unverified:
+	docker run --rm -it -v $(PWD):/opt trufflesecurity/trufflehog:latest filesystem /opt --fail --exclude-paths /opt/credential-scan-exclusions.txt
 
-credential-scan-git-verified-no-update-no-log:
+credential-scan-verified-no-update-no-log:
 	docker run --rm -it -v $(PWD):/opt trufflesecurity/trufflehog:latest git file:///opt --only-verified --no-update --fail > /dev/null
 
-credential-scan-git-unverified-no-update-no-log:
+credential-scan-unverified-no-update-no-log:
 	docker run --rm -it -v $(PWD):/opt trufflesecurity/trufflehog:latest git file:///opt --no-update --fail > /dev/null
