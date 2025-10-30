@@ -3,26 +3,39 @@ The files in this directory provide configuration and deployment resources for r
 
 ## Prerequisites  
 
-### Local Use Requirements
+### Local Environment Requirements
 
-The pre-commit solution included in this repository requires all users have docker installed on their local development environment.
+The pre-commit solution included in this repository requires all users have [docker](https://www.docker.com/get-started/) installed on their local development environment.
 
-### Local Use setup and use
+### Local Environment Setup
 
-To help avoid sensitive credentials being deposited to source control, a pre-configured git pre-commit hook (used for local environmnets only) has been included in this repository. You can enable this feature for a repository by copying the .githooks folder to the root of your repository. Once there, you can be register the helper by running the command `git config --global core.hooksPath .githooks/`. Alternatively, the command `make git-credential-config` can be run if Make is installed.
+To help avoid sensitive credentials being deposited to source control, a pre-configured git pre-commit hook (used for local environments only) that runs a credential scan using the official TruffleHog OSS docker image has been included in this repository. 
+
+#### Registering the .githook
+
+You can enable this feature for a repository by copying the [.githooks](.githooks) folder to the root of your repository. Once there, you can register the helper by running the command `git config --global core.hooksPath .githooks/`. Alternatively, the command `make git-credential-config` can be run if Make is installed.
 
 When staging content for a commit, files will be automatically scanned and if credentials verified, the commit will be aborted.
 
-### GitHub Action
-The [credential-scan.yml](./credential-scan.yml) file is designed for use with GitHub Actions. The only prerequisite is that your source code is managed on GitHub. To deploy this action, place the file in your repository’s `.github/workflows` directory. Alternatively, you can host a central repository and apply a repository ruleset (using the branch ruleset type), enable the "Require workflows to pass before merging" setting, and reference the `credential-scan.yml` action.
+#### Running manually using Make
 
-### Makefile content
+A Makefile that includes a set of named commands for running credential scans (using the TruffleHog OSS docker image) manually at any time is included in this solution's source.
 
-A shorthand for running credential scans manually at any time is included in this solution's source. To trigger a git (verified only) scan, run the command `make credential-scan-git-verified`. Please see [Makefile](./Makefile) contents for other supported scan types.
+If `Make` is installed, run the command `make credential-scan-verified`. Please see [Makefile](./Makefile) contents for other supported scan types.
 
-### Filtering false positives
+#### Testing the installation
+
+Once the tool has been registered, to test if it is working, create a file called `creds.txt` and add the content found at [https://github.com/trufflesecurity/test_keys/blob/main/keys](test keys). Once the file has been created, run the command `make credential-scan-unverified`. If the tool has been registered correctly, you will receive an ouput saying "Found verified result", with details of the credential placed in the `creds.txt` file.
+
+To test the pre-coomit hook, stage the file as a commit to github. When running the git commit command, the same output should be observed and the commit will be cancelled. A clean scan will allow a commit to continue as normal.
+
+#### Filtering false positives
 
 On issuing the `make git-credential-config` command, a `credential-scan-exclusions.txt` file will be created in the root of your repository directory (if it does not already exist). This file can be populated using the same syntax as .gitignore files to intentionally exclude false positives.
+
+
+### GitHub Action
+The [credential-scan.yml](./credential-scan.yml) file is designed for use with GitHub Actions. The only prerequisite is that your source code is managed on GitHub. To deploy this action, place the file in your repository’s `.github/workflows` directory. Alternatively, you can host a central repository and apply a repository ruleset (using the branch ruleset type), enable the "Require workflows to pass before merging" setting, and reference the `credential-scan.yml` action.
 
 ## Public Funding Acknowledgment  
 This repository has been developed with public funding as part of the National Digital Twin Programme (NDTP), a UK Government initiative. NDTP, alongside its partners, has invested in this work to advance open, secure, and reusable digital twin technologies for any organisation, whether from the public or private sector, irrespective of size.  
