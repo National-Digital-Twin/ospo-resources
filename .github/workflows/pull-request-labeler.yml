@@ -15,10 +15,10 @@ jobs:
       issues: write
     steps:
       - name: Checkout target repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Checkout OSPO source repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
