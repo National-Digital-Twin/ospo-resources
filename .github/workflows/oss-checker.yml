@@ -33,19 +33,19 @@ jobs:
           permission-contents: read
 
       - name: Checkout target repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           token: ${{ steps.target_token.outputs.token }}
 
       - name: Checkout OSPO source repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
           token: ${{ steps.ospo_token.outputs.token }}
 
       - name: Checkout archetypes source repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: National-Digital-Twin/archetypes
           path: archetypes
