@@ -4,6 +4,13 @@
 name: Run OSS check helper
 
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
   workflow_dispatch:
 
 permissions:
@@ -11,6 +18,10 @@ permissions:
 
 jobs:
   oss-checks:
+    if: github.actor != 'dependabot[bot]' && 
+      (github.event.repository.private == false ||
+        (github.event.repository.private == true &&
+         contains(join(github.event.pull_request.labels.*.name), 'oss-preparation')))
     runs-on: ubuntu-latest
 
     steps:
