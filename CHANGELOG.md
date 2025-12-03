@@ -17,6 +17,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.95.0] – 2025-12-03
+
+### Added
+- Enable OSS checker conditionally for private repositories when 'oss-preparation' label is present on PRs.
+
 ## [0.94.1] – 2025-11-24
 
 ### Fixed 
