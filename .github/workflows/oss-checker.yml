@@ -65,7 +65,7 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const { existsSync, readFileSync } = require('fs');
+            const { existsSync, readFileSync, writeFileSync } = require('fs');
 
             const checklistPath = 'ospo-resources/oss-checklist-files.txt';
             const checklist = readFileSync(checklistPath, 'utf8')
@@ -73,53 +73,98 @@ jobs:
               .map((line) => line.trim())
               .filter((line) => line && !line.startsWith('#'));
 
-            const missingFiles = [];
-            const unchangedFiles = [];
+            const results = [];
+            const prHead = context.payload.pull_request?.head;
+            const repoFullName = prHead?.repo?.full_name ?? process.env.GITHUB_REPOSITORY ?? 'unknown/unknown';
+            const commitSha = prHead?.sha ?? process.env.GITHUB_SHA ?? 'unknown';
 
             for (const relativePath of checklist) {
+              const record = {
+                path: relativePath,
+                status: 'passed',
+                checks: {
+                  exists: false,
+                  differsFromTemplate: null,
+                },
+                failureReasons: [],
+              };
+
               const targetPath = relativePath;
               const archetypePath = `archetypes/${relativePath}`;
 
-              if(!existsSync(targetPath)) {
-                core.info(`Missing OSS file in target repository: ${targetPath}`);
-                missingFiles.push(relativePath);
+              const fileExists = existsSync(targetPath);
+              record.checks.exists = fileExists;
+
+              if (!fileExists) {
+                record.status = 'failed';
+                record.failureReasons.push('missing or misnamed');
+                core.info(`Missing or misnamed OSS file in target repository: ${targetPath}`);
+                results.push(record);
                 continue;
               }
 
               const targetContent = readFileSync(targetPath, 'utf8');
-              const archetypeContent = existsSync(archetypePath)
-                ? readFileSync(archetypePath, 'utf8')
-                : null;
 
-              if (archetypeContent !== null && targetContent === archetypeContent) {
-                core.info(`OSS file unchanged from archetypes template: ${targetPath}`);
-                unchangedFiles.push(relativePath);
+              if (existsSync(archetypePath)) {
+                const archetypeContent = readFileSync(archetypePath, 'utf8');
+                const differsFromTemplate = targetContent !== archetypeContent;
+                record.checks.differsFromTemplate = differsFromTemplate;
+
+                if (!differsFromTemplate) {
+                  record.failureReasons.push('unchanged from archetype template');
+                  core.info(`OSS file unchanged from archetypes template: ${targetPath}`);
+                } else {
+                  core.info(`OSS file present and different from the archetypes template: ${targetPath}`);
+                }
+              } else {
+                record.checks.differsFromTemplate = null;
+                core.info(`Template file missing for ${relativePath}; skipping template comparison.`);
               }
 
-              core.info(`OSS file present and different from the archetypes template: ${targetPath}`);
+              record.status = record.failureReasons.length > 0 ? 'failed' : 'passed';
+              results.push(record);
             }
 
-            if (missingFiles.length > 0) {
-              core.info('The following OSS required files are missing:');
-              missingFiles.forEach((file) => core.info(file));
-            }
+            const passed = results.filter((result) => result.status === 'passed').length;
+            const failed = results.length - passed;
+            const score = results.length > 0 ? Number((passed / results.length).toFixed(2)) : 0;
 
-            if (unchangedFiles.length > 0) {
-              core.info('The following OSS required files are unchanged from the archetypes template:');
-              unchangedFiles.forEach((file) => core.info(file));
-            }
+            const report = {
+              runMetadata: {
+                checklistFile: checklistPath,
+                timestamp: new Date().toISOString(),
+                repo: repoFullName,
+                commit: commitSha,
+                checkType: 'OSS',
+              },
+              files: results,
+              summary: {
+                total: results.length,
+                passed,
+                failed,
+                score,
+              },
+            };
 
-            if (missingFiles.length > 0 || unchangedFiles.length > 0) {
-              core.setFailed('OSS required file check failed.');
+            const reportPath = 'oss-results.json';
+            writeFileSync(reportPath, JSON.stringify(report, null, 2));
+            core.info(`Wrote checklist summary to ${reportPath}`);
+
+            if (failed > 0) {
+              const failedFiles = results
+                .filter((result) => result.status === 'failed')
+                .map((result) => result.path);
+              core.setFailed(`The following files failed checks:\n${failedFiles.join('\n')}`);
             } else {
               core.info('All OSS files are present and have been updated from their original templated content.');
             }
 
       - name: Check GitHub template files are present
         uses: actions/github-script@v8
+        if: success() || failure()
         with:
           script: |
-            const { existsSync } = require('fs');
+            const { existsSync, writeFileSync  } = require('fs');
 
             core.info('Checking for pull request and issue template files');
 
@@ -129,16 +174,145 @@ jobs:
               '.github/ISSUE_TEMPLATE/feature_request.md',
             ];
 
-            const missingTemplates = filesToCheck.filter((file) => !existsSync(file));
+            const results = filesToCheck.map((filePath) => {
+              const exists = existsSync(filePath);
+              return {
+                path: filePath,
+                status: exists ? 'passed' : 'failed',
+                checks: {
+                  exists,
+                  differsFromTemplate: null,
+                },
+                failureReasons: exists ? [] : ['missing or misnamed'],
+              };
+            });
 
-            if (missingTemplates.length > 0) {
+            const passed = results.filter((result) => result.status === 'passed').length;
+            const failed = results.length - passed;
+            const score = results.length > 0 ? Number((passed / results.length).toFixed(2)) : 0;
+
+            const prHead = context.payload.pull_request?.head;
+            const report = {
+              runMetadata: {
+                timestamp: new Date().toISOString(),
+                repo: prHead?.repo?.full_name ?? process.env.GITHUB_REPOSITORY ?? 'unknown/unknown',
+                commit: prHead?.sha ?? process.env.GITHUB_SHA ?? 'unknown',
+                checkType: 'template',
+              },
+              files: results,
+              summary: {
+                total: results.length,
+                passed,
+                failed,
+                score,
+              },
+            };
+
+            const reportPath = 'template-results.json';
+            writeFileSync(reportPath, JSON.stringify(report, null, 2));
+            core.info(`Wrote template checklist summary to ${reportPath}`);
+
+            if (failed > 0) {
+              const missingTemplates = results
+                .filter((result) => result.status === 'failed')
+                .map((result) => result.path);
+
               core.info('');
-              core.info('Required GitHub template files not found:');
+              core.info('Required GitHub template files were not found or did not match expected casing:');
               missingTemplates.forEach((file) => core.info(`  - ${file}`));
               core.info('');
               core.info('These files help improve project collaboration and are considered best practice.');
               core.info('These need to be included in repository contents to improve the developer and repository consumer experience.');
-              core.setFailed('Missing required GitHub template files.');
+              core.setFailed('Missing or misnamed GitHub template files.');
             } else {
               core.info('Required pull request and issue template files present.');
+            }
+
+      - name: Generate summary
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { existsSync, readFileSync } = require('fs');
+
+            const reportFiles = [
+              'oss-results.json',
+              'template-results.json',
+            ];
+
+            const reports = reportFiles
+              .filter((reportPath) => {
+                const present = existsSync(reportPath);
+                if (!present) {
+                  core.info(`Summary step skipping missing report: ${reportPath}`);
+                }
+                return present;
+              })
+              .map((reportPath) => JSON.parse(readFileSync(reportPath, 'utf8')));
+
+            if (reports.length === 0) {
+              core.info('No report files found; skipping combined summary.');
+              return;
+            }
+
+            const allResults = reports.flatMap((report) =>
+              report.files.map((file) => ({
+                ...file,
+                category: report.runMetadata?.checkType ?? 'unknown',
+                repo: report.runMetadata?.repo ?? process.env.GITHUB_REPOSITORY ?? 'unknown/unknown',
+                commit: report.runMetadata?.commit ?? process.env.GITHUB_SHA ?? 'unknown',
+              })),
+            );
+
+            const combinedTableMarkdown = [
+              '| 📄 File | ✅ Result | 🧾 Details |',
+              '| :--- | :---: | :--- |',
+              ...allResults.map((result) => {
+                const href = `https://github.com/${result.repo}/blob/${result.commit}/${result.path}`;
+                const details = result.failureReasons.length > 0
+                  ? result.failureReasons.join('; ')
+                  : 'Compliant';
+                const statusLabel = result.status === 'passed' ? '🟢 Pass' : '🔴 Fail';
+                return `| [${result.path}](${href}) | ${statusLabel} | ${details} |`;
+              }),
+            ].join('\n');
+
+            const total = allResults.length;
+            const passed = allResults.filter((result) => result.status === 'passed').length;
+            const failed = total - passed;
+            const score = total > 0 ? (passed / total) * 100 : 0;
+            const summary = { total, passed, failed, score };
+
+            const overallStatus = summary.failed === 0
+              ? '🎉 Overall status: PASS (all files compliant).'
+              : '⚠️ Overall status: FAIL (see table below for details).';
+
+            const summaryMarkdown = [
+              '| 📊 Total Files | 🟢 Passed | 🔴 Failed | 🧮 Score |',
+              '| ---: | ---: | ---: | ---: |',
+              `| ${summary.total} | ${summary.passed} | ${summary.failed} | ${summary.score.toFixed(0)}% |`
+            ].join('\n');
+
+            const prHead = context.payload.pull_request?.head;
+            const repoFullName = prHead?.repo?.full_name ?? process.env.GITHUB_REPOSITORY ?? 'unknown/unknown';
+            const fullSha = prHead?.sha ?? process.env.GITHUB_SHA ?? '';
+            const shortSha = fullSha?.slice(0, 7) ?? 'unknown';
+            const commitUrl = fullSha
+              ? `https://github.com/${repoFullName}/commit/${fullSha}`
+              : null;
+            const commitLine = commitUrl
+              ? `Results from commit [\`${shortSha}\`](${commitUrl}).`
+              : `Results from commit \`${shortSha}\`.`;
+
+            await core.summary
+              .addHeading('OSS Check Results ⚙️')
+              .addRaw(`\n${combinedTableMarkdown}\n`, true)
+              .addHeading('Summary 🏁')
+              .addRaw(`\n${overallStatus}\n`, true)
+              .addRaw(`\n${summaryMarkdown}\n`, true)
+              .addRaw(`\n${commitLine}\n`, true)
+              .write();
+
+            if (summary.failed > 0) {
+              core.setFailed('OSS checks detected one or more failing files.');
             }
