@@ -23,6 +23,9 @@ jobs:
         (github.event.repository.private == true &&
          contains(join(github.event.pull_request.labels.*.name), 'oss-preparation')))
     runs-on: ubuntu-latest
+    outputs:
+      summary-table: ${{ steps.summarise_results.outputs.summaryTable }}
+      has-results: ${{ steps.summarise_results.outputs.hasResults }}
 
     steps:
       - name: Fetch GitHub App token for target repo
@@ -229,6 +232,7 @@ jobs:
             }
 
       - name: Generate summary
+        id: summarise_results
         if: always()
         uses: actions/github-script@v8
         with:
@@ -252,6 +256,7 @@ jobs:
 
             if (reports.length === 0) {
               core.info('No report files found; skipping combined summary.');
+              core.setOutput('hasResults', 'false');
               return;
             }
 
@@ -305,14 +310,104 @@ jobs:
               : `Results from commit \`${shortSha}\`.`;
 
             await core.summary
-              .addHeading('OSS Check Results ⚙️')
+              .addRaw('# OSS Check Results ⚙️\n', true)
               .addRaw(`\n${combinedTableMarkdown}\n`, true)
-              .addHeading('Summary 🏁')
+              .addRaw('\n# Summary 🏁\n', true)
               .addRaw(`\n${overallStatus}\n`, true)
               .addRaw(`\n${summaryMarkdown}\n`, true)
               .addRaw(`\n${commitLine}\n`, true)
               .write();
 
+            core.setOutput('hasResults', 'true');
+            core.setOutput('summaryTable', summaryMarkdown);
+
             if (summary.failed > 0) {
               core.setFailed('OSS checks detected one or more failing files.');
+            }
+
+  comment-on-results:
+    needs: oss-checks
+    if: >-
+      always() &&
+      github.event_name == 'pull_request' &&
+      needs.oss-checks.outputs.has-results == 'true'
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Comment with OSS summary
+        uses: actions/github-script@v8
+        env:
+          SUMMARY_TABLE: ${{ needs.oss-checks.outputs.summary-table }}
+          JOB_RESULT: ${{ needs.oss-checks.result }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request?.number;
+
+            if (!prNumber) {
+              core.info('No pull request context; skipping comment step.');
+              return;
+            }
+
+            const jobSummaryUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const prHead = context.payload.pull_request?.head;
+            const headCommitSha = prHead?.sha ?? process.env.GITHUB_SHA ?? '';
+            const shortSha = headCommitSha ? headCommitSha.slice(0, 7) : 'unknown';
+            const runResult = process.env.JOB_RESULT?.toLowerCase() ?? '';
+            const isFailure = runResult === 'failure';
+
+            const marker = '<!-- oss-checks-comment -->';
+            const heading = isFailure
+              ? '## ⚠️ OSS Checks Failed'
+              : '## ✅ OSS Checks Passed';
+            const narration = isFailure
+              ? 'One or more OSS checks failed in this run.'
+              : 'All tracked OSS checks passed in this run.';
+
+            const bodySections = [
+              heading,
+              narration,
+              process.env.SUMMARY_TABLE,
+              `Results from commit ${shortSha}, view the full [job summary↗️](${jobSummaryUrl}) for detailed results.`
+            ];
+
+            const existingComments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner,
+                repo,
+                issue_number: prNumber,
+                per_page: 100,
+              },
+            );
+
+            const previous = existingComments.find((comment) =>
+              comment.body?.includes(marker),
+            );
+
+            if(previous) {
+              bodySections.push(':recycle: This comment has been updated with latest results.');
+            }
+
+            const body = `${marker}\n${bodySections.join('\n\n')}\n${marker}`;
+
+            if (previous) {
+              core.info(`Updating existing OSS summary comment (${previous.id}).`);
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: previous.id,
+                body,
+              });
+            } else {
+              core.info('Creating new OSS summary comment.');
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body,
+              });
             }
