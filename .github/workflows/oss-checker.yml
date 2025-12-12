@@ -325,6 +325,16 @@ jobs:
               core.setFailed('OSS checks detected one or more failing files.');
             }
 
+      - name: Upload OSS result artifacts
+        if: ${{ steps.summarise_results.outputs.hasResults == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: oss-checks-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            oss-results.json
+            template-results.json
+
   comment-on-results:
     needs: oss-checks
     if: >-
