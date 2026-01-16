@@ -17,6 +17,13 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.96.2] – 2026-01-15
+
+### Security
+
+- Hardened GitHub Actions workflows by mapping user-controlled data (e.g., `github.head_ref`) to environment variables in `run` blocks to prevent potential script injection.
+- Refined repository permissions in `publish-github-release.yml` by moving `contents: write` from the workflow level to specific jobs, adhering to the principle of least privilege.
+
 ## [0.96.1] – 2025-12-18
 
 ### Fixed

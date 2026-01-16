@@ -13,15 +13,14 @@ on:
       - unlabeled
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   oss-checks:
-    if: github.actor != 'dependabot[bot]' && 
+    permissions:
+      contents: read
+    if: github.actor != 'dependabot[bot]' &&
       (github.event.repository.private == false ||
-        (github.event.repository.private == true &&
-         contains(join(github.event.pull_request.labels.*.name), 'oss-preparation')))
+      (github.event.repository.private == true &&
+      contains(join(github.event.pull_request.labels.*.name), 'oss-preparation')))
     runs-on: ubuntu-latest
     outputs:
       summary-table: ${{ steps.summarise_results.outputs.summaryTable }}
@@ -344,6 +343,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
+      contents: read
       pull-requests: write
 
     steps:

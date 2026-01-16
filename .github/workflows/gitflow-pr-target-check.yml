@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check merge target
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_BRANCH: ${{ github.head_ref }}
         run: |
-          BASE_BRANCH="${{ github.base_ref }}"
-          HEAD_BRANCH="${{ github.head_ref }}"
-
           # Allow merging feature, hotfix, or bugfix into develop
           if [[ "$HEAD_BRANCH" =~ ^(feature/|hotfix/|bugfix/|dependabot/) && "$BASE_BRANCH" == "develop" ]]; then
             echo "Allowed: $HEAD_BRANCH → $BASE_BRANCH"
