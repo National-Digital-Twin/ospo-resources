@@ -17,6 +17,19 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.0] – 2026-01-30
+
+### Added
+
+- Introduce policy as code (via conftest) for dependabot target branch enforcement
+- Add tests for dependabot policy
+- Added README documentation for using and developing Policy as Code
+- Updated oss-checker to use new dependabot policy.
+
+### Fixed
+
+- Update dependabot configuration to set target branch to `develop`
+
 ## [0.96.2] – 2026-01-15
 
 ### Security

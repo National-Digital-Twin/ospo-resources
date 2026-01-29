@@ -63,6 +63,127 @@ jobs:
           repository: National-Digital-Twin/archetypes
           path: archetypes
 
+      - name: Fetch Repository Metadata
+        uses: actions/github-script@v8
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { writeFileSync } = require('fs');
+
+            // Check specifically for 'develop' branch existence
+            let hasDevelopBranch = false;
+            try {
+              await github.rest.repos.getBranch({
+                owner,
+                repo,
+                branch: 'develop',
+              });
+              hasDevelopBranch = true;
+            } catch (error) {
+              if (error.status !== 404) {
+                 core.warning(`Error checking for develop branch: ${error.message}`);
+              }
+            }
+
+            const metadata = {
+              repository: {
+                defaultBranch: process.env.DEFAULT_BRANCH,
+                hasDevelopBranch: hasDevelopBranch
+              }
+            };
+
+            const rawMetadata = JSON.stringify(metadata, null, 2);
+
+            core.info('Content for repository-metadata.json:');
+            core.info(rawMetadata);
+
+            writeFileSync('repository-metadata.json', rawMetadata);
+            core.info('Generated repository-metadata.json for policy context.');
+
+      - name: Install Conftest
+        run: |
+          LATEST_VERSION=$(curl -s "https://api.github.com/repos/open-policy-agent/conftest/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+')
+          curl -L "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_Linux_x86_64.tar.gz" | tar -xz
+          sudo mv conftest /usr/local/bin/
+
+      - name: Run Policy Checks
+        id: run_conftest
+        run: |
+          conftest test .github/dependabot.yml \
+            -p ospo-resources/tools/policy-as-code/policy \
+            --data repository-metadata.json \
+            --namespace github.dependabot \
+            --output json > policy-report.json || true
+
+      - name: Process Policy Results
+        uses: actions/github-script@v8
+        with:
+          script: |
+             const { existsSync, readFileSync, writeFileSync } = require('fs');
+
+             let resultJson = [];
+             if (existsSync('policy-report.json')) {
+               try {
+                 const rawContent = readFileSync('policy-report.json', 'utf8');
+                 if (rawContent.trim()) {
+                    resultJson = JSON.parse(rawContent);
+                 }
+               } catch(e) {
+                 core.error(`Failed to parse policy-report.json: ${e.message}`);
+                 core.setFailed(`Failed to parse policy-report.json: ${e.message}`);
+                 return;
+               }
+             }
+
+             const results = resultJson.map(r => {
+               const failureReasons = (r.failures || []).map(f => f.msg);
+               return {
+                 path: r.filename,
+                 status: failureReasons.length > 0 ? 'failed' : 'passed',
+                 failureReasons: failureReasons,
+                 checks: {
+                   namespace: r.namespace,
+                   successes: r.successes
+                 }
+               };
+             });
+
+             const passed = results.filter((result) => result.status === 'passed').length;
+             const failed = results.length - passed;
+             const score = results.length > 0 ? Number((passed / results.length).toFixed(2)) : 0;
+
+             const prHead = context.payload.pull_request?.head;
+             const repoFullName = prHead?.repo?.full_name ?? process.env.GITHUB_REPOSITORY ?? 'unknown/unknown';
+             const commitSha = prHead?.sha ?? process.env.GITHUB_SHA ?? 'unknown';
+
+             const report = {
+               runMetadata: {
+                 timestamp: new Date().toISOString(),
+                 repo: repoFullName,
+                 commit: commitSha,
+                 checkType: 'policy',
+               },
+               files: results,
+               summary: {
+                 total: results.length,
+                 passed,
+                 failed,
+                 score,
+               },
+             };
+
+             const reportPath = 'policy-results.json';
+             writeFileSync(reportPath, JSON.stringify(report, null, 2));
+             core.info(`Wrote policy summary to ${reportPath}`);
+             
+             if (failed > 0) {
+               core.setFailed('Policy checks failed for one or more files.');
+             } else {
+               core.info('All policy checks passed.');
+             }
+
       - name: Test for presence of OSS files and variation from templated content
         uses: actions/github-script@v8
         with:
@@ -241,6 +362,7 @@ jobs:
             const reportFiles = [
               'oss-results.json',
               'template-results.json',
+              'policy-results.json',
             ];
 
             const reports = reportFiles
@@ -333,6 +455,7 @@ jobs:
           path: |
             oss-results.json
             template-results.json
+            policy-results.json
 
   comment-on-results:
     needs: oss-checks

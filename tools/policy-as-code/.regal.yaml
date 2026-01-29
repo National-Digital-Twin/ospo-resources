@@ -1,0 +1,23 @@
+rules:
+  style:
+    line-length:
+      # maximum line length (factors in copyright headers)
+      max-line-length: 200 
+      # if any single word on a line exceeds this length, ignore it
+      non-breakable-word-threshold: 100
+  imports:
+    unresolved-reference:
+      # list of paths that should be ignored
+      # these may be paths to data, or rules that may
+      # not be present at the time of linting
+      # using glob syntax
+      except-paths:
+        - data.repository
+        - data.repository.*
+
+    unresolved-import:
+      # list of paths that should be ignored
+      # these may be paths to data, or rules that may
+      # not be present at the time of linting
+      except-imports:
+        - data.repository
