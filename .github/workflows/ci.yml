@@ -1,0 +1,194 @@
+# SPDX-License-Identifier: Apache-2.0
+# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    outputs:
+      run_pac_ci: ${{ steps.pac-changes.outputs.pac }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - uses: dorny/paths-filter@v3
+        name: detect policy-as-code changes
+        id: pac-changes
+        with:
+          filters: |
+            pac:
+              - 'tools/policy-as-code/**'
+
+  lint-policies:
+    permissions:
+      contents: read
+
+    name: Lint Policies
+    runs-on: ubuntu-latest
+
+    needs: detect-changes
+    if: needs.detect-changes.outputs.run_pac_ci == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup OPA
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
+
+      - name: Setup Regal
+        uses: open-policy-agent/setup-regal@v1
+        with:
+          version: latest
+
+      - name: OPA Check (Strict)
+        run: | 
+          opa check --strict tools/policy-as-code/policy
+
+      - name: Regal Lint (github format)
+        run: |
+          mkdir -p test-results
+          regal lint -f github tools/policy-as-code/policy
+
+      - name: Regal Lint (sarif format)
+        if: success() || failure()
+        run: |
+          mkdir -p test-results
+          regal lint -f sarif tools/policy-as-code/policy -o test-results/lint-results.sarif
+
+      - name: Upload linting results
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pac-linting-report
+          path: test-results/lint-results.sarif
+
+  test-policies:
+    permissions:
+      contents: read
+
+    needs: detect-changes
+    if: needs.detect-changes.outputs.run_pac_ci == 'true'
+
+    name: Test Policies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup OPA
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
+
+      - name: Run OPA Tests and Generate Reports
+        run: |
+          # Create output directory
+          mkdir -p test-results
+
+          # 1. GENERATE TEST RESULTS (JUnit XML)
+          # Convert JSON results to JUnit XML using jq
+          opa test --format=json tools/policy-as-code/policy | jq -r '
+            "<testsuites time=\"\((map(.duration) | add // 0) / 1000000000)\">
+               <testsuite name=\"OPA\" tests=\"\(length)\" failures=\"\(map(select(.fail)) | length)\" time=\"\((map(.duration) | add // 0) / 1000000000)\">
+                 \(map("<testcase name=\"\(.name)\" classname=\"\(.package)\" time=\"\(.duration/1000000000)\">\(if .fail then "<failure message=\"Test failed\"/>" else "" end)</testcase>") | join(""))
+               </testsuite>
+             </testsuites>"
+          ' > test-results/test-results.xml
+
+          # 2. GENERATE COVERAGE REPORT (LCOV)
+          # Convert OPA JSON coverage to LCOV format using jq
+          opa test --coverage --format=json tools/policy-as-code/policy | jq -r '
+            .files | to_entries[] | 
+            "SF:" + .key,
+            (.value.covered[]? | range(.start.row; .end.row + 1) | "DA:" + (.|tostring) + ",1"),
+            (.value.not_covered[]? | range(.start.row; .end.row + 1) | "DA:" + (.|tostring) + ",0"),
+            "end_of_record"
+          ' > test-results/lcov.info
+
+      - name: Upload test reports
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pac-test-report
+          path: test-results/
+
+  publish-results:
+    permissions:
+      contents: read
+      security-events: write
+
+    needs:
+      - lint-policies
+      - test-policies
+
+    if: success() || failure()
+
+    name: Publish Reports
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: 'pac-*-report'
+          path: test-results
+          merge-multiple: true
+
+      - name: Upload SARIF file
+        if: (success() || failure()) && github.event.repository.visibility == 'public'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: test-results/lint-results.sarif
+          category: regal-lint
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v7.0.0
+        if: success() || failure()
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+            args: >
+              -Dsonar.projectKey=National-Digital-Twin_ospo-resources
+              -Dsonar.organization=national-digital-twin
+              -Dsonar.sources=.
+              -Dsonar.tests=tools/policy-as-code/policy
+              -Dsonar.test.inclusions=**/*_test.rego
+              -Dsonar.javascript.lcov.reportPaths=test-results/lcov.info
+              -Dsonar.junit.reportPaths=test-results/test-results.xml
+              -Dsonar.sarifReportPaths=test-results/*.sarif
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v2.5.0
+        if: success() || failure()
+        with:
+          name: OPA Test Results
+          path: test-results/test-results.xml
+          reporter: java-junit

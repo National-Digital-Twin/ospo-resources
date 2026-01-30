@@ -12,3 +12,9 @@
 .idea/
 *.tmproj
 .vscode/
+
+# act - used for testing workflows
+.artifacts/
+
+# results
+test-results/
