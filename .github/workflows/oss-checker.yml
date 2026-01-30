@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Fetch GitHub App token for target repo
         id: target_token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         with:
           app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
           private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
@@ -37,7 +37,7 @@ jobs:
 
       - name: Fetch GitHub App token for OSPO source repo (read-only)
         id: ospo_token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         with:
           app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
           private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
@@ -46,25 +46,25 @@ jobs:
           permission-contents: read
 
       - name: Checkout target repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           token: ${{ steps.target_token.outputs.token }}
 
       - name: Checkout OSPO source repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
           token: ${{ steps.ospo_token.outputs.token }}
 
       - name: Checkout archetypes source repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: National-Digital-Twin/archetypes
           path: archetypes
 
       - name: Fetch Repository Metadata
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         with:
@@ -118,7 +118,7 @@ jobs:
             --output json > policy-report.json || true
 
       - name: Process Policy Results
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
              const { existsSync, readFileSync, writeFileSync } = require('fs');
@@ -185,7 +185,7 @@ jobs:
              }
 
       - name: Test for presence of OSS files and variation from templated content
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             const { existsSync, readFileSync, writeFileSync } = require('fs');
@@ -283,7 +283,7 @@ jobs:
             }
 
       - name: Check GitHub template files are present
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         if: success() || failure()
         with:
           script: |
@@ -354,7 +354,7 @@ jobs:
       - name: Generate summary
         id: summarise_results
         if: always()
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             const { existsSync, readFileSync } = require('fs');
@@ -448,7 +448,7 @@ jobs:
 
       - name: Upload OSS result artifacts
         if: ${{ steps.summarise_results.outputs.hasResults == 'true' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: oss-checks-${{ github.run_id }}
           retention-days: 30
@@ -471,7 +471,7 @@ jobs:
 
     steps:
       - name: Comment with OSS summary
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           SUMMARY_TABLE: ${{ needs.oss-checks.outputs.summary-table }}
           JOB_RESULT: ${{ needs.oss-checks.result }}

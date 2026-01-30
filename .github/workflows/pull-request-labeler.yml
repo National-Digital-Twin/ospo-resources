@@ -15,10 +15,10 @@ jobs:
       issues: write
     steps:
       - name: Checkout target repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Checkout OSPO source repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: National-Digital-Twin/ospo-resources
           path: ospo-resources
@@ -35,6 +35,6 @@ jobs:
           fi
 
       - name: Apply labels
-        uses: actions/labeler@v6
+        uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
         with:
           configuration-path: ${{ steps.labeler-configuration-file-location.outputs.config }}
