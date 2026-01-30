@@ -104,8 +104,8 @@ jobs:
 
       - name: Install Conftest
         run: |
-          LATEST_VERSION=$(curl -s "https://api.github.com/repos/open-policy-agent/conftest/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+')
-          curl -L "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_Linux_x86_64.tar.gz" | tar -xz
+          LATEST_VERSION=$(curl --proto "=https" -s "https://api.github.com/repos/open-policy-agent/conftest/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+')
+          curl --proto "=https" -L "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_Linux_x86_64.tar.gz" | tar -xz
           sudo mv conftest /usr/local/bin/
 
       - name: Run Policy Checks
