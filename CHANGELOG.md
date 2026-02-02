@@ -17,12 +17,6 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
-## [0.97.1] – 2026-01-30
-
-### Added
-
-- Pin GitHub actions to SHAs rather than major/minor versions.
-
 ## [0.97.0] – 2026-01-30
 
 ### Added
@@ -31,6 +25,7 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 - Add tests for dependabot policy
 - Added README documentation for using and developing Policy as Code
 - Updated oss-checker to use new dependabot policy.
+- Pin GitHub actions to SHAs rather than major/minor versions.
 
 ### Fixed
 
