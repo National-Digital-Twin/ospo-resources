@@ -17,6 +17,15 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.1] - 2026-02-02
+
+### Update
+
+- bump actions/upload-artifact from 4.6.2 to 6.0.0
+- bump open-policy-agent/setup-opa from 2.2.0 to 2.3.0
+- bump actions/checkout from 6.0.1 to 6.0.2
+- bump actions/download-artifact from 4.3.0 to 7.0.0
+
 ## [0.97.0] – 2026-01-30
 
 ### Added
