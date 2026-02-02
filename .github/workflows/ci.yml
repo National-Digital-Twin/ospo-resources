@@ -147,7 +147,7 @@ jobs:
       - lint-policies
       - test-policies
 
-    if: success() || failure()
+    if: always()
 
     name: Publish Reports
     runs-on: ubuntu-latest
@@ -162,8 +162,19 @@ jobs:
           path: test-results
           merge-multiple: true
 
+      - name: Detect reports exist
+        id: results-check
+        run: |
+          HAS_SARIF=$([ -f "test-results/lint-results.sarif" ] && echo "true" || echo "false")
+          HAS_UNIT=$([ -f "test-results/test-results.xml" ] && echo "true" || echo "false")
+
+          echo "sarif-reports=$HAS_SARIF" >> $GITHUB_OUTPUT
+          echo "unit-reports=$HAS_UNIT" >> $GITHUB_OUTPUT
+
       - name: Upload SARIF file
-        if: (success() || failure()) && github.event.repository.visibility == 'public'
+        if: |
+          github.event.repository.visibility == 'public' &&
+          steps.results-check.outputs.sarif-reports == 'true'
         uses: github/codeql-action/upload-sarif@b20883b0cd1f46c72ae0ba6d1090936928f9fa30 # v4.32.0
         with:
           sarif_file: test-results/lint-results.sarif
@@ -171,23 +182,15 @@ jobs:
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
-        if: success() || failure()
+        if: always()
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-            args: >
-              -Dsonar.projectKey=National-Digital-Twin_ospo-resources
-              -Dsonar.organization=national-digital-twin
-              -Dsonar.sources=.
-              -Dsonar.tests=tools/policy-as-code/policy
-              -Dsonar.test.inclusions=**/*_test.rego
-              -Dsonar.javascript.lcov.reportPaths=test-results/lcov.info
-              -Dsonar.junit.reportPaths=test-results/test-results.xml
-              -Dsonar.sarifReportPaths=test-results/*.sarif
 
       - name: Publish Test Results
         uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2.5.0
-        if: success() || failure()
+        if: |
+          always() &&
+          steps.results-check.outputs.unit-reports == 'true'
         with:
           name: OPA Test Results
           path: test-results/test-results.xml
