@@ -8,12 +8,13 @@ on:
     branches:
       - main
       - develop
-      - 'release/**'
-      - 'hotfix/**'
   pull_request:
     branches:
       - main
       - develop
+      - 'release/**'
+      - 'hotfix/**'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,16 +27,21 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      pull-requests: read
 
     outputs:
-      run_pac_ci: ${{ steps.pac-changes.outputs.pac }}
+      run_pac_ci: >-
+        ${{ (github.event_name == 'pull_request' && steps.pac-changes.outputs.pac ) ||
+         github.event_name == 'workflow_dispatch' ||
+         (github.event_name == 'push' && github.ref_name == 'main' || github.ref_name == 'develop') }}
     steps:
       - name: Checkout code
+        if: github.event_name == 'pull_request'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         name: detect policy-as-code changes
+        if: github.event_name == 'pull_request'
         id: pac-changes
         with:
           filters: |
@@ -110,26 +116,60 @@ jobs:
         run: |
           # Create output directory
           mkdir -p test-results
+          mkdir -p tmp
+
+          opa test --format=json tools/policy-as-code/policy > tmp/test-results.json
 
           # 1. GENERATE TEST RESULTS (JUnit XML)
           # Convert JSON results to JUnit XML using jq
-          opa test --format=json tools/policy-as-code/policy | jq -r '
+           jq -r '
             "<testsuites time=\"\((map(.duration) | add // 0) / 1000000000)\">
                <testsuite name=\"OPA\" tests=\"\(length)\" failures=\"\(map(select(.fail)) | length)\" time=\"\((map(.duration) | add // 0) / 1000000000)\">
                  \(map("<testcase name=\"\(.name)\" classname=\"\(.package)\" time=\"\(.duration/1000000000)\">\(if .fail then "<failure message=\"Test failed\"/>" else "" end)</testcase>") | join(""))
                </testsuite>
              </testsuites>"
-          ' > test-results/test-results.xml
+          ' tmp/test-results.json > test-results/test-results-junit.xml
 
-          # 2. GENERATE COVERAGE REPORT (LCOV)
-          # Convert OPA JSON coverage to LCOV format using jq
+          # 2. GENERATE TEST EXECUTION REPORT (Generic Test Data for SonarQube)
+          # Convert OPA JSON test results to Sonar Generic Execution XML format
+          jq -r '
+            "<testExecutions version=\"1\">" +
+            (
+              [
+                group_by(.location.file)[] |
+                "<file path=\"\(.[0].location.file)\">" +
+                (
+                  map(
+                    "<testCase name=\"\(.name)\" duration=\"\((.duration / 1000000) | floor)\">" +
+                    (if .fail then "<failure message=\"Test failed\"/>" else "" end) +
+                    "</testCase>"
+                  ) | join("")
+                ) +
+                "</file>"
+              ] | join("")
+            ) +
+            "</testExecutions>"
+          ' tmp/test-results.json > test-results/test-results.xml
+
+          # 3. GENERATE COVERAGE REPORT (Generic Test Data)
+          # Convert OPA JSON coverage to Sonar Generic XML format
           opa test --coverage --format=json tools/policy-as-code/policy | jq -r '
-            .files | to_entries[] | 
-            "SF:" + .key,
-            (.value.covered[]? | range(.start.row; .end.row + 1) | "DA:" + (.|tostring) + ",1"),
-            (.value.not_covered[]? | range(.start.row; .end.row + 1) | "DA:" + (.|tostring) + ",0"),
-            "end_of_record"
-          ' > test-results/lcov.info
+            "<coverage version=\"1\">" +
+            (
+              [
+                .files | to_entries[] |
+                "<file path=\"\(.key)\">" +
+                (
+                  [
+                    (.value.covered[]? | range(.start.row; .end.row + 1) | "<lineToCover lineNumber=\"\(.)\" covered=\"true\"/>"),
+                    (.value.not_covered[]? | range(.start.row; .end.row + 1) | "<lineToCover lineNumber=\"\(.)\" covered=\"false\"/>")
+                  ] | join("")
+                ) +
+                "</file>"
+              ] | join("")
+            ) +
+            "</coverage>"
+          ' > test-results/coverage.xml
 
       - name: Upload test reports
         if: success() || failure()
@@ -155,6 +195,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
 
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
@@ -193,5 +235,5 @@ jobs:
           steps.results-check.outputs.unit-reports == 'true'
         with:
           name: OPA Test Results
-          path: test-results/test-results.xml
+          path: test-results/test-results-junit.xml
           reporter: java-junit
