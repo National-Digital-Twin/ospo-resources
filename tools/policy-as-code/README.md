@@ -7,7 +7,7 @@
 
 This directory contains the Policy as Code (PaC) definitions used to enforce governance, security, and quality standards across repositories within the National Digital Twin Programme (NDTP).
 
-These policies are executed using [Conftest](https://www.conftest.dev/), a utility for testing configuration files using the [Open Policy Agent (OPA)](https://www.openpolicyagent.org/) Rego query language.
+These policies are executed using [Conftest](https://www.conftest.dev/), a utility for testing configuration files using the [Open Policy Agent (OPA)](https://www.openpolicyagent.org/) declarative language [Rego](https://www.openpolicyagent.org/docs/policy-language).
 
 The policies defined here are automatically executed as part of the automated `oss-checker` workflow. This ensures that repositories are continuously validated against organisational standards, providing immediate feedback to contributors via automated compliance checks on Pull Requests.
 
