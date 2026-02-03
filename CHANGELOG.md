@@ -17,7 +17,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
-## [0.97.1] - 2026-02-02
+## [0.97.1] - 2026-02-04
+
+### Added
+
+- Add support for fork sync/* branches in Git Flow PR target check workflow.
 
 ### Update
 
@@ -25,6 +29,7 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 - bump open-policy-agent/setup-opa from 2.2.0 to 2.3.0
 - bump actions/checkout from 6.0.1 to 6.0.2
 - bump actions/download-artifact from 4.3.0 to 7.0.0
+- bump github/codeql-action from 4.32.0 to 4.32.1
 
 ## [0.97.0] – 2026-01-30
 
