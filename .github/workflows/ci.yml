@@ -206,12 +206,37 @@ jobs:
 
       - name: Detect reports exist
         id: results-check
-        run: |
-          HAS_SARIF=$([ -f "test-results/lint-results.sarif" ] && echo "true" || echo "false")
-          HAS_UNIT=$([ -f "test-results/test-results.xml" ] && echo "true" || echo "false")
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const args = [];
 
-          echo "sarif-reports=$HAS_SARIF" >> $GITHUB_OUTPUT
-          echo "unit-reports=$HAS_UNIT" >> $GITHUB_OUTPUT
+            const hasSarif = fs.existsSync('test-results/lint-results.sarif');
+            const hasUnit = fs.existsSync('test-results/test-results.xml');
+            const hasCoverage = fs.existsSync('test-results/coverage.xml');
+
+            core.setOutput('sarif-reports', hasSarif);
+            core.setOutput('unit-reports', hasUnit);
+            core.setOutput('coverage-reports', hasCoverage);
+
+            // Check for lint report
+            if (hasSarif) {
+              args.push('-Dsonar.sarifReportPaths=test-results/lint-results.sarif');
+            }
+
+            // Check for JavaScript/TypeScript coverage
+            if (hasUnit) {
+              args.push('-Dsonar.testExecutionReportPaths=test-results/test-results.xml');
+            }
+
+            // Check for Test Execution reports
+            if (hasCoverage) {
+              args.push('-Dsonar.coverageReportPaths=test-results/coverage.xml');
+            }
+
+            // Join with spaces and set as output
+            core.setOutput('sonar-args', args.join(' '));
 
       - name: Upload SARIF file
         if: |
@@ -227,6 +252,9 @@ jobs:
         if: always()
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            ${{ steps.results-check.outputs.sonar-args }}
 
       - name: Publish Test Results
         uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2.5.0
