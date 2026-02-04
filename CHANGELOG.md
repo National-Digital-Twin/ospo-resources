@@ -31,6 +31,11 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 - bump actions/download-artifact from 4.3.0 to 7.0.0
 - bump github/codeql-action from 4.32.0 to 4.32.1
 
+### Fixed
+
+- Add conditional report args to prevent sonar scan from failing when no reports are generated.
+- Add missing if statement to oss-checker to ensure all compliance results are processed.
+
 ## [0.97.0] – 2026-01-30
 
 ### Added
