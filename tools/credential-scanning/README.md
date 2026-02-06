@@ -31,7 +31,7 @@ To test the pre-commit hook, stage the file as a commit to github. When running 
 
 #### Filtering false positives
 
-On issuing the `make git-credential-config` command, a `credential-scan-exclusions.txt` file will be created in the root of your repository directory (if it does not already exist). This file can be populated using the same syntax as .gitignore files to intentionally exclude false positives.
+On issuing the `make git-credential-config` command, a `credential-scan-exclusions.txt` file will be created in the root of your repository directory (if it does not already exist). This file can be populated using the same syntax as .gitignore files to intentionally exclude false positives when running local scans using the unverified flag.
 
 
 ### GitHub Action
