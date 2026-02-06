@@ -25,13 +25,13 @@ If `Make` is installed, run the command `make credential-scan-verified`. Please 
 
 #### Testing the installation
 
-Once the tool has been registered, to test if it is working, create a file called `creds.txt` and add the content found at [https://github.com/trufflesecurity/test_keys/blob/main/keys](test keys). Once the file has been created, run the command `make credential-scan-unverified`. If the tool has been registered correctly, you will receive an ouput saying "Found verified result", with details of the credential placed in the `creds.txt` file.
+Once the tool has been registered, to test if it is working, create a file called `creds.txt` and add the content found at [test keys](https://github.com/trufflesecurity/test_keys/blob/main/keys). Once the file has been created, run the command `make credential-scan-unverified`. If the tool has been registered correctly, you will receive an ouput saying "Found verified result", with details of the credential placed in the `creds.txt` file.
 
-To test the pre-coomit hook, stage the file as a commit to github. When running the git commit command, the same output should be observed and the commit will be cancelled. A clean scan will allow a commit to continue as normal.
+To test the pre-commit hook, stage the file as a commit to github. When running the git commit command, the same output should be observed and the commit will be cancelled. A clean scan will allow a commit to continue as normal.
 
 #### Filtering false positives
 
-On issuing the `make git-credential-config` command, a `credential-scan-exclusions.txt` file will be created in the root of your repository directory (if it does not already exist). This file can be populated using the same syntax as .gitignore files to intentionally exclude false positives.
+On issuing the `make git-credential-config` command, a `credential-scan-exclusions.txt` file will be created in the root of your repository directory (if it does not already exist). This file can be populated using the same syntax as .gitignore files to intentionally exclude false positives when running local scans using the unverified flag.
 
 
 ### GitHub Action

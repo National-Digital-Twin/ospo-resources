@@ -17,6 +17,12 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.2] - 2026-02-06
+
+### Fixed
+
+- Move to Trufflehog OSS GitHub Action
+
 ## [0.97.1] - 2026-02-04
 
 ### Added
