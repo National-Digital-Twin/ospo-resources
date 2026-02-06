@@ -1,7 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories: 
+      - "/"
+      - "/tools/credential-scanning"
+      - "/tools/sbom-aggregation"
     target-branch: "develop"
     schedule:
       interval: "weekly"
