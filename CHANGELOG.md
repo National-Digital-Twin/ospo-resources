@@ -17,6 +17,13 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.3] - 2026-02-06
+
+### Update
+
+- bump trufflesecurity/trufflehog from 3.93.0 to 3.93.1
+- bump github/codeql-action from 4.32.1 to 4.32.2
+
 ## [0.97.2] - 2026-02-06
 
 ### Fixed
