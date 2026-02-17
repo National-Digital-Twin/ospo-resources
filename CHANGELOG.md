@@ -17,6 +17,21 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.5] - 2026-03-03
+
+### Added
+
+- Added fork-specific workflows to enable semi-automated fork synchronisation.
+
+### Update
+
+- Updated `synchronise-ospo-workflows` to support opt-in fork-specific workflows.
+- Updated `gitflow-pr-target-check` to support `sync/*` merging into `intermediate-sync`.
+- bump github/codeql-action from 4.32.3 to 4.32.5
+- bump actions/upload-artifact from 6.0.0 to 7.0.0
+- bump actions/download-artifact from 7.0.0 to 8.0.0
+- bump trufflesecurity/trufflehog from 3.93.3 to 3.93.6
+
 ## [0.97.4] - 2026-02-19
 
 ### Update
