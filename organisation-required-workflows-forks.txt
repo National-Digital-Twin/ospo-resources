@@ -1,0 +1,10 @@
+# This file contains relative paths to workflows required specifically for forked repositories.
+# These workflows are synchronised only if the target repository is a fork AND has the 
+# repository variable `FORK_WORKFLOWS_OPT_IN` set to 'true'.
+# If a workflow file listed here is not found in the target repository, it will be
+# automatically synchronised and committed to the source branch of the pull request.
+
+.github/workflows/fork-upstream-sync.yml
+.github/workflows/fork-upstream-sync-pr.yml
+.github/workflows/fork-intermediate-sync.yml
+.github/workflows/fork-intermediate-merge.yml

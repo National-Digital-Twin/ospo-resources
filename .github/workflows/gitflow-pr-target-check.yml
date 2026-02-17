@@ -28,10 +28,17 @@ jobs:
             exit 0
           fi
 
+          # Allow merging sync branches into intermediate-sync (Automated Fork Sync)
+          if [[ "$HEAD_BRANCH" =~ ^sync/ && "$BASE_BRANCH" == "intermediate-sync" ]]; then
+            echo "Allowed: $HEAD_BRANCH → $BASE_BRANCH"
+            exit 0
+          fi
+
           # If none of the above conditions match, block the PR
           echo "Error: Invalid PR - '$HEAD_BRANCH' cannot be merged into '$BASE_BRANCH'."
           echo "Allowed merges:"
           echo "  - feature/*, hotfix/*, bugfix/*, dependabot/* → develop"
           echo "  - release/*, hotfix/* → main"
+          echo "  - sync/* → intermediate-sync"
           exit 1
 
