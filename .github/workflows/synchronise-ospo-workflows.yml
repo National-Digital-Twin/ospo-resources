@@ -5,6 +5,10 @@ name: Synchronise OSPO Workflows
 
 on:
   pull_request:
+    # we should not inject commits into Pull Requests targeting the main branch
+    # everything should go via develop and then be merged to main via release/hotfix
+    branches-ignore:
+      - "main"
 
 jobs:
   synchronise-ospo-workflows:
