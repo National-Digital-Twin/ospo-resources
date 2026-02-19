@@ -2,7 +2,7 @@
 # © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
 
 # This workflow is triggered when a pull request is merged into the main branch
-# from a release/* branch. It extracts the release version from the source branch,
+# from a release/* or hotfix/* branch. It extracts the release version from the source branch,
 # generates a Software Bill of Materials (SBOM) using the GitHub API,
 # creates a Git tag with the version, and publishes a GitHub release including the SBOM file.
 
@@ -17,9 +17,11 @@ on:
 
 jobs:
   versioning:
+    if: |
+      github.event.pull_request.merged == true &&
+      (startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/'))
     permissions:
       contents: read
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
     name: Extract Release Version
     runs-on: ubuntu-latest
     outputs:
@@ -46,7 +48,7 @@ jobs:
           VERSION: ${{ env.VERSION }}
         run: |
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Invalid version format found. Expected semantic version in release branch name (e.g., release/0.9.0)"
+            echo "Error: Invalid version format found. Expected semantic version in release or hotfix branch name (e.g., release/0.9.0 or hotfix/0.9.1)"
             exit 1
           fi
 
@@ -106,6 +108,11 @@ jobs:
           tag: "v${{ needs.versioning.outputs.version }}"
           message: "Release v${{ needs.versioning.outputs.version }}"
           force_push_tag: true
+          # Tag the HEAD commit from the merged release branch not the merge commit to
+          # ensure the tag points to the correct source code state for the release.
+          # This ensures that the release tag is also visible on any branch which does
+          # not contain the merge commit such as develop.
+          commit_sha: ${{ github.event.pull_request.head.sha }}
 
   create-git-release:
     permissions:

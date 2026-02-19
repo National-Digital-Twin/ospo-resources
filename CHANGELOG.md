@@ -17,6 +17,18 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.4] - 2026-02-19
+
+### Update
+
+- Updated `synchronise-ospo-workflows` to ignore pull requests targeting `main`.
+- Updated `gitflow-pr-target-check` to support `hotfix/*` branches merging into `main`
+- Updated `publish-github-release` to support releases from `hotfix/*` branches merging into `main`.
+- Updated `publish-github-release` to tag the HEAD commit of the merged release branch
+  instead of the merge commit to ensure the release tag points to the correct source code state for the release.
+- bump github/codeql-action from 4.32.1 to 4.32.2
+- bump trufflesecurity/trufflehog from 3.93.1 to 3.93.3
+
 ## [0.97.3] - 2026-02-06
 
 ### Update
