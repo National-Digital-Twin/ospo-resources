@@ -17,6 +17,17 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.5] - 2026-03-02
+
+### Added
+
+- Added fork-specific workflows to enable semi-automated fork synchronisation.
+
+### Update
+
+- Updated `synchronise-ospo-workflows` to support opt-in fork-specific workflows.
+- Updated `gitflow-pr-target-check` to support `sync/*` merging into `intermediate-sync`.
+
 ## [0.97.4] - 2026-02-19
 
 ### Update
