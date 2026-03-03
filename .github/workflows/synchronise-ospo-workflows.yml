@@ -64,6 +64,37 @@ jobs:
             fi
           done < ospo-resources/organisation-required-workflows.txt
 
+      - name: Copy and compare fork-specific workflow files from OSPO repo
+        if: github.event.repository.fork == true && vars.FORK_WORKFLOWS_OPT_IN == 'true'
+        run: |
+          while IFS= read -r file || [ -n "$file" ]; do
+            # Skip comments and empty lines
+            if [[ -z "$file" || "$file" == \#* ]]; then
+              continue
+            fi
+
+            src="ospo-resources/tools/fork-support/$file"
+            filename="$(basename "$file")"
+            tgt=".github/workflows/$filename"
+
+            if [ ! -f "$src" ]; then
+              echo "WARNING: Source file not found in OSPO repository: $src"
+              continue
+            fi
+
+            mkdir -p "$(dirname "$tgt")"
+
+            if [ ! -f "$tgt" ]; then
+              echo "File missing in target repo: $tgt"
+              cp "$src" "$tgt"
+            elif ! cmp -s "$src" "$tgt"; then
+              echo "File differs and will be updated: $tgt"
+              cp "$src" "$tgt"
+            else
+              echo "File is already up to date: $tgt"
+            fi
+          done < ospo-resources/organisation-required-workflows-forks.txt
+
       - name: Check out pull request branch
         env:
           HEAD_REF: ${{ github.head_ref }}
