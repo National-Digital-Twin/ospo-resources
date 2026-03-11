@@ -1,0 +1,31 @@
+on:
+  push:
+    branches:
+      - demo-release # Added for demo purposes so you can test on a branch other than main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+name: release-please
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Generate PR Token
+        id: pr-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ secrets.NDTP_PULL_REQUEST_CONTROLLER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.NDTP_PULL_REQUEST_CONTROLLER_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            ${{ github.event.repository.name }}
+          permission-pull-requests: write
+
+      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+        with:
+          token: ${{ steps.pr-token.outputs.token }}
