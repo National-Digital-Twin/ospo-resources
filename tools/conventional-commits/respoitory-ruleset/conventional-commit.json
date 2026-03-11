@@ -1,0 +1,30 @@
+{
+  "name": "pr-squash-conventional-commit",
+  "target": "branch",
+  "source_type": "Organization",
+  "enforcement": "active",
+  "conditions": {
+    "repository_property": {
+      "exclude": [],
+      "include": []
+    },
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "refs/heads/develop"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "commit_message_pattern",
+      "parameters": {
+        "operator": "regex",
+        "pattern": "^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\\([a-z0-9-.]+\\))?(!)?: [a-z](?:.*[^.\\n])(\\n\\n[\\s\\S]*)?$",
+        "negate": false,
+        "name": "Squash commit messages must adhere to the conventional commit standard."
+      }
+    }
+  ],
+  "bypass_actors": []
+}

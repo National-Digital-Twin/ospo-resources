@@ -17,6 +17,18 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.6] - 2026-03-05
+
+### Added
+
+- Add conventional commits regex validation to support squash merge commit messages.
+
+### Update
+
+- bump trufflesecurity/trufflehog from 3.93.6 to 3.93.7
+- bump github/codeql-action from 4.32.5 to 4.32.6
+- bump dorny/test-reporter from 2.5.0 to 2.6.0
+
 ## [0.97.5] - 2026-03-03
 
 ### Added

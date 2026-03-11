@@ -31,22 +31,28 @@ jobs:
 
     outputs:
       run_pac_ci: >-
-        ${{ (github.event_name == 'pull_request' && steps.pac-changes.outputs.pac ) ||
+        ${{ (github.event_name == 'pull_request' && steps.changes.outputs.pac == 'true') ||
          github.event_name == 'workflow_dispatch' ||
-         (github.event_name == 'push' && github.ref_name == 'main' || github.ref_name == 'develop') }}
+         (github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop')) }}
+      run_conventional_commits_ci: >-
+        ${{ (github.event_name == 'pull_request' && steps.changes.outputs.conventional_commits == 'true') ||
+         github.event_name == 'workflow_dispatch' ||
+         (github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop')) }}
     steps:
       - name: Checkout code
         if: github.event_name == 'pull_request'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
-        name: detect policy-as-code changes
+        name: detect changes
         if: github.event_name == 'pull_request'
-        id: pac-changes
+        id: changes
         with:
           filters: |
             pac:
               - 'tools/policy-as-code/**'
+            conventional_commits:
+              - 'tools/conventional-commits/respoitory-ruleset/**'
 
   lint-policies:
     permissions:
@@ -116,6 +122,7 @@ jobs:
         run: |
           # Create output directory
           mkdir -p test-results
+          mkdir -p test-results/coverage
           mkdir -p tmp
 
           opa test --format=json tools/policy-as-code/policy > tmp/test-results.json
@@ -169,13 +176,49 @@ jobs:
               ] | join("")
             ) +
             "</coverage>"
-          ' > test-results/coverage.xml
+          ' > test-results/coverage/coverage.xml
 
       - name: Upload test reports
         if: success() || failure()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: pac-test-report
+          path: test-results/
+
+  test-conventional-commits:
+    permissions:
+      contents: read
+
+    needs: detect-changes
+    if: needs.detect-changes.outputs.run_conventional_commits_ci == 'true'
+
+    name: Test Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tools/conventional-commits/respoitory-ruleset/requirements.txt
+
+      - name: Run Tests
+        working-directory: tools/conventional-commits/respoitory-ruleset
+        run: |
+          mkdir -p ../../../test-results
+          pytest test_commit_regex.py --junitxml=../../../test-results/test-results-conventional-commits.xml
+
+      - name: Upload test reports
+        if: success() || failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: conventional-commits-test-report
           path: test-results/
 
   publish-results:
@@ -186,6 +229,7 @@ jobs:
     needs:
       - lint-policies
       - test-policies
+      - test-conventional-commits
 
     if: always()
 
@@ -200,7 +244,7 @@ jobs:
 
       - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
-          pattern: 'pac-*-report'
+          pattern: '*-report'
           path: test-results
           merge-multiple: true
 
@@ -214,10 +258,11 @@ jobs:
 
             const hasSarif = fs.existsSync('test-results/lint-results.sarif');
             const hasUnit = fs.existsSync('test-results/test-results.xml');
-            const hasCoverage = fs.existsSync('test-results/coverage.xml');
+            const hasConventionalCommits = fs.existsSync('test-results/test-results-conventional-commits.xml');
+            const hasCoverage = fs.existsSync('test-results/coverage/coverage.xml');
 
             core.setOutput('sarif-reports', hasSarif);
-            core.setOutput('unit-reports', hasUnit);
+            core.setOutput('unit-reports', hasUnit || hasConventionalCommits);
             core.setOutput('coverage-reports', hasCoverage);
 
             // Check for lint report
@@ -225,14 +270,19 @@ jobs:
               args.push('-Dsonar.sarifReportPaths=test-results/lint-results.sarif');
             }
 
-            // Check for JavaScript/TypeScript coverage
+            // Check for Test Execution reports
             if (hasUnit) {
               args.push('-Dsonar.testExecutionReportPaths=test-results/test-results.xml');
             }
 
-            // Check for Test Execution reports
+            // Check for Conventional Commits test report
+            if (hasConventionalCommits) {
+              args.push('-Dsonar.python.xunit.reportPath=test-results/test-results-conventional-commits.xml');
+            }
+
+            // Check for coverage report
             if (hasCoverage) {
-              args.push('-Dsonar.coverageReportPaths=test-results/coverage.xml');
+              args.push('-Dsonar.coverageReportPaths=test-results/coverage/coverage.xml');
             }
 
             // Join with spaces and set as output
@@ -263,5 +313,5 @@ jobs:
           steps.results-check.outputs.unit-reports == 'true'
         with:
           name: OPA Test Results
-          path: test-results/test-results-junit.xml
+          path: 'test-results/test-results-*.xml'
           reporter: java-junit
