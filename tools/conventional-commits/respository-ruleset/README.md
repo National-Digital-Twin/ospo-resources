@@ -31,7 +31,7 @@ To run the tests locally, you will need:
 1. Navigate to the directory:
 
    ```bash
-   cd tools/conventional-commits/respoitory-ruleset
+   cd tools/conventional-commits/respository-ruleset
    ```
 
 2. Create and activate a virtual environment:

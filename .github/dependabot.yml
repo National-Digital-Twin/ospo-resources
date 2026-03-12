@@ -5,6 +5,16 @@ updates:
       - "/"
       - "/tools/credential-scanning"
       - "/tools/sbom-aggregation"
+      - "/tools/fork-support"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pip"
+    directories: 
+      - "/"
+      - "/tools/credential-scanning"
+      - "/tools/conventional-commits/repository-ruleset"
     target-branch: "develop"
     schedule:
       interval: "weekly"
