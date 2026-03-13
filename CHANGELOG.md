@@ -17,6 +17,18 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.98.0] - 2026-03-13
+
+### Security
+
+- update permissions on pr-terget-check and synchronise-ospo-workflows based on CodeQL recommendations
+
+### Update
+
+- bump actions/download-artifact from 8.0.0 to 8.0.1
+- bump dorny/paths-filter from 3.0.2 to 4.0.0
+- bump trufflesecurity/trufflehog from 3.93.7 to 3.93.8
+
 ## [0.97.7] - 2026-03-13
 
 ### Added
