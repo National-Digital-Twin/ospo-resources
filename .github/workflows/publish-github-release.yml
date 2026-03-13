@@ -15,6 +15,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   versioning:
     if: |
@@ -22,6 +26,7 @@ jobs:
       (startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/'))
     permissions:
       contents: read
+
     name: Extract Release Version
     runs-on: ubuntu-latest
     outputs:
@@ -62,6 +67,7 @@ jobs:
   generate-sbom:
     permissions:
       contents: read
+
     name: Generate SPDX SBOM
     runs-on: ubuntu-latest
     needs: [versioning]
@@ -93,6 +99,7 @@ jobs:
   create-git-tag:
     permissions:
       contents: write
+
     name: Create Git Tag
     needs: [versioning, generate-sbom]
     runs-on: ubuntu-latest
@@ -117,6 +124,7 @@ jobs:
   create-git-release:
     permissions:
       contents: write
+
     name: Create GitHub Release
     needs: [versioning, generate-sbom, create-git-tag]
     runs-on: ubuntu-latest
