@@ -52,7 +52,7 @@ jobs:
             pac:
               - 'tools/policy-as-code/**'
             conventional_commits:
-              - 'tools/conventional-commits/respoitory-ruleset/**'
+              - 'tools/conventional-commits/respository-ruleset/**'
 
   lint-policies:
     permissions:
@@ -206,10 +206,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r tools/conventional-commits/respoitory-ruleset/requirements.txt
+          pip install -r tools/conventional-commits/respository-ruleset/requirements.txt
 
       - name: Run Tests
-        working-directory: tools/conventional-commits/respoitory-ruleset
+        working-directory: tools/conventional-commits/respository-ruleset
         run: |
           mkdir -p ../../../test-results
           pytest test_commit_regex.py --junitxml=../../../test-results/test-results-conventional-commits.xml

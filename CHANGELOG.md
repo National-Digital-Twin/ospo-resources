@@ -17,6 +17,16 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.97.7] - 2026-03-13
+
+### Added
+
+- add advanced CodeQL analysis workflow
+
+### Update
+
+- update dependant bot configuration to add python support
+
 ## [0.97.6] - 2026-03-05
 
 ### Added
