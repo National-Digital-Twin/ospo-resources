@@ -6,6 +6,8 @@ name: GitFlow - PR Target Check
 on:
   pull_request:
 
+permissions: {}
+
 jobs:
   pr-target-check:
     if: github.actor != 'dependabot[bot]'

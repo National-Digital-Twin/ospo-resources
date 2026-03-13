@@ -15,6 +15,9 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
       - name: Fetch GitHub App token for target repo (write)
         id: target_token
@@ -22,6 +25,9 @@ jobs:
         with:
           app-id: ${{ secrets.OSPO_WORKFLOW_APP_ID }}
           private-key: ${{ secrets.OSPO_WORKFLOW_PRIVATE_KEY }}
+          # principle of least privilege, request only the permissions needed for this job
+          permission-contents: write
+          permission-workflows: write
 
       - name: Checkout target repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -106,8 +112,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: "feat(OSPO): synchronise OSPO workflows"
-          commit_user_name: github-actions
-          commit_user_email: actions@github.com
+          commit_user_name: ${{ steps.target_token.outputs.app-slug }}[bot]
+          commit_user_email: ${{ steps.target_token.outputs.user-id }}+${{ steps.target_token.outputs.app-slug }}[bot]@users.noreply.github.com
           file_pattern: .github/workflows/*
           skip_fetch: true
 
