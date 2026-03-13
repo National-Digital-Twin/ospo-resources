@@ -19,6 +19,10 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ## [0.98.0] - 2026-03-13
 
+### Added
+
+- add workflow to sync main branch to develop on PR merge into main
+
 ### Security
 
 - update permissions on pr-terget-check and synchronise-ospo-workflows based on CodeQL recommendations
