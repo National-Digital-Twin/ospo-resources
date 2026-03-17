@@ -17,6 +17,19 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.98.1] - 2026-03-17
+
+### Added
+
+- increase sbom-aggregation script test coverage
+
+### Update
+
+- bump softprops/action-gh-release from 2.5.0 to 2.6.1
+- bump actions/create-github-app-token from 2.2.1 to 3.0.0
+- bump dorny/paths-filter from 4.0.0 to 4.0.1
+- bump github/codeql-action from 4.32.6 to 4.33.0
+
 ## [0.98.0] - 2026-03-13
 
 ### Added
