@@ -41,7 +41,7 @@ esac
 mkdir -p .github
 output_file=".github/dependabot-proposed.yml"
 
-if [ -f "$output_file" ]; then
+if [[ -f "$output_file" ]]; then
   echo "Existing proposed configuration found. Removing: $output_file"
   rm "$output_file"
 fi
@@ -83,10 +83,14 @@ EOF
           - "version-update:semver-major"
 EOF
   fi
+
+  return 0
 }
 
 # Excludes common directories
 filtered_find() {
+  local file_pattern="$1"
+
   find . \
     -type d \( \
       -name node_modules -o \
@@ -99,20 +103,24 @@ filtered_find() {
       -name .idea -o \
       -name .m2 \
       -name .gradle \
-    \) -prune -false -o -name "$1" -print
+    \) -prune -false -o -name "$file_pattern" -print
+
+  return $?
 }
 
 # GitHub Actions
-if [ -d ".github/workflows" ]; then
+if [[ -d ".github/workflows" ]]; then
   add_dependabot_ecosystem "github-actions" "/" "actions-dependencies"
 fi
+
+readonly STRIP_DOT_SLASH_EXPR='s|^\./||'
 
 # Python: requirements.txt, pyproject.toml, Pipfile
 python_dirs=$( (filtered_find "requirements.txt"; filtered_find "pyproject.toml"; filtered_find "Pipfile") \
   | while IFS= read -r file; do dirname "$file"; done \
-  | sed 's|^\./||' | sort -u )
+  | sed "$STRIP_DOT_SLASH_EXPR" | sort -u )
 
-if [ -n "$python_dirs" ]; then
+if [[ -n "$python_dirs" ]]; then
   echo "$python_dirs" | while IFS= read -r dir; do
     [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "pip" "/$dir" "python-dependencies"
@@ -125,7 +133,7 @@ fi
 # npm/Yarn: package.json
 if filtered_find "package.json" | grep -q .; then
   filtered_find "package.json" | while IFS= read -r pkg_path; do
-    dir=$(dirname "$pkg_path" | sed 's|^\./||')
+    dir=$(dirname "$pkg_path" | sed "$STRIP_DOT_SLASH_EXPR")
     [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "npm" "/$dir" "js-dependencies"
   done
@@ -134,7 +142,7 @@ fi
 # Maven: pom.xml
 if filtered_find "pom.xml" | grep -q .; then
   filtered_find "pom.xml" | while IFS= read -r pom_path; do
-    dir=$(dirname "$pom_path" | sed 's|^\./||')
+    dir=$(dirname "$pom_path" | sed "$STRIP_DOT_SLASH_EXPR")
     [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "maven" "/$dir" "maven-dependencies"
   done
@@ -143,7 +151,7 @@ fi
 # Docker: Dockerfile variants
 if filtered_find "Dockerfile*" | grep -q .; then
   filtered_find "Dockerfile*" | while IFS= read -r docker_path; do
-    dir=$(dirname "$docker_path" | sed 's|^\./||')
+    dir=$(dirname "$docker_path" | sed "$STRIP_DOT_SLASH_EXPR")
     [[ "$dir" == "." ]] && dir=""
     add_dependabot_ecosystem "docker" "/$dir" "docker-dependencies"
   done
