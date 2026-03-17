@@ -14,6 +14,7 @@ updates:
     directories: 
       - "/"
       - "/tools/credential-scanning"
+      - "/tools/sbom-aggregation"
       - "/tools/conventional-commits/repository-ruleset"
     target-branch: "develop"
     schedule:
