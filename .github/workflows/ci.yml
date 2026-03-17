@@ -38,12 +38,16 @@ jobs:
         ${{ (github.event_name == 'pull_request' && steps.changes.outputs.conventional_commits == 'true') ||
          github.event_name == 'workflow_dispatch' ||
          (github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop')) }}
+      run_sbom_aggregation_ci: >-
+        ${{ (github.event_name == 'pull_request' && steps.changes.outputs.sbom_aggregation == 'true') ||
+         github.event_name == 'workflow_dispatch' ||
+         (github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop')) }}
     steps:
       - name: Checkout code
         if: github.event_name == 'pull_request'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # v4.0.0
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         name: detect changes
         if: github.event_name == 'pull_request'
         id: changes
@@ -53,6 +57,8 @@ jobs:
               - 'tools/policy-as-code/**'
             conventional_commits:
               - 'tools/conventional-commits/respository-ruleset/**'
+            sbom_aggregation:
+              - 'tools/sbom-aggregation/**'
 
   lint-policies:
     permissions:
@@ -209,16 +215,59 @@ jobs:
           pip install -r tools/conventional-commits/respository-ruleset/requirements.txt
 
       - name: Run Tests
-        working-directory: tools/conventional-commits/respository-ruleset
         run: |
-          mkdir -p ../../../test-results
-          pytest test_commit_regex.py --junitxml=../../../test-results/test-results-conventional-commits.xml
+          # Create output directory
+          mkdir -p test-results
+
+          pytest --junitxml=test-results/test-results-conventional-commits.xml \
+                 -- tools/conventional-commits/respository-ruleset/test_commit_regex.py 
 
       - name: Upload test reports
         if: success() || failure()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: conventional-commits-test-report
+          path: test-results/
+
+  test-sbom-aggregation:
+    permissions:
+      contents: read
+
+    needs: detect-changes
+    if: needs.detect-changes.outputs.run_sbom_aggregation_ci == 'true'
+
+    name: Test SBOM Aggregation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tools/sbom-aggregation/requirements.txt
+
+      - name: Run Tests
+        run: |
+          # Create output directory
+          mkdir -p test-results/coverage
+
+          pytest --cov-config=tools/sbom-aggregation/.coveragerc \
+                 --cov=merge_sboms \
+                 --cov-report xml:test-results/coverage/sbom-cov.xml \
+                 --junitxml=test-results/test-results-sbom-aggregation.xml \
+                 -- tools/sbom-aggregation/test_merge_sboms.py
+
+      - name: Upload test reports
+        if: success() || failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: sbom-aggregation-test-report
           path: test-results/
 
   publish-results:
@@ -230,6 +279,7 @@ jobs:
       - lint-policies
       - test-policies
       - test-conventional-commits
+      - test-sbom-aggregation
 
     if: always()
 
@@ -259,11 +309,13 @@ jobs:
             const hasSarif = fs.existsSync('test-results/lint-results.sarif');
             const hasUnit = fs.existsSync('test-results/test-results.xml');
             const hasConventionalCommits = fs.existsSync('test-results/test-results-conventional-commits.xml');
+            const hasSbomUnit = fs.existsSync('test-results/test-results-sbom-aggregation.xml');
             const hasCoverage = fs.existsSync('test-results/coverage/coverage.xml');
+            const hasSbomCoverage = fs.existsSync('test-results/coverage/sbom-cov.xml');
 
             core.setOutput('sarif-reports', hasSarif);
-            core.setOutput('unit-reports', hasUnit || hasConventionalCommits);
-            core.setOutput('coverage-reports', hasCoverage);
+            core.setOutput('unit-reports', hasUnit || hasConventionalCommits || hasSbomUnit);
+            core.setOutput('coverage-reports', hasCoverage || hasSbomCoverage);
 
             // Check for lint report
             if (hasSarif) {
@@ -275,14 +327,27 @@ jobs:
               args.push('-Dsonar.testExecutionReportPaths=test-results/test-results.xml');
             }
 
-            // Check for Conventional Commits test report
+            // Check for Python test reports
+            const pythonTestReports = [];
             if (hasConventionalCommits) {
-              args.push('-Dsonar.python.xunit.reportPath=test-results/test-results-conventional-commits.xml');
+              pythonTestReports.push('test-results/test-results-conventional-commits.xml');
+            }
+
+            if (hasSbomUnit) {
+              pythonTestReports.push('test-results/test-results-sbom-aggregation.xml');
+            }
+
+            if (pythonTestReports.length > 0) {
+              args.push(`-Dsonar.python.xunit.reportPath=${pythonTestReports.join(',')}`);
             }
 
             // Check for coverage report
             if (hasCoverage) {
               args.push('-Dsonar.coverageReportPaths=test-results/coverage/coverage.xml');
+            }
+
+            if (hasSbomCoverage) {
+              args.push('-Dsonar.python.coverage.reportPaths=test-results/coverage/sbom-cov.xml');
             }
 
             // Join with spaces and set as output
@@ -292,7 +357,7 @@ jobs:
         if: |
           github.event.repository.visibility == 'public' &&
           steps.results-check.outputs.sarif-reports == 'true'
-        uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
+        uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
         with:
           sarif_file: test-results/lint-results.sarif
           category: regal-lint

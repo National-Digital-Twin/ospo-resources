@@ -8,50 +8,55 @@ from spdx_tools.spdx.model import Document, CreationInfo, Actor, ActorType
 from spdx_tools.spdx.parser.parse_anything import parse_file
 from spdx_tools.spdx.writer.write_anything import write_file
 
-if len(sys.argv) < 3:
-    print("Usage: merge_sboms.py <output_file> <input1> <input2> ...")
-    sys.exit(1)
+def merge_sboms(output_file, input_files):
+    # Create minimal creation info required by SPDX specification
+    creation_info = CreationInfo(
+        spdx_version="SPDX-2.3",
+        created=datetime.now(timezone.utc),
+        name="Merged SBOM",
+        document_namespace="https://replace-with-your-preferred-organisation-namespace/spdx/",
+        creators=[Actor(ActorType.TOOL, "sbom-aggregator/1.0")],
+        spdx_id="SPDXRef-DOCUMENT",
+    )
 
-output_file = sys.argv[1]
-input_files = sys.argv[2:]
+    # Create the document with basic metadata
+    merged = Document(creation_info=creation_info)
 
-# Create minimal creation info required by SPDX specification
-creation_info = CreationInfo(
-    spdx_version="SPDX-2.3",
-    created=datetime.now(timezone.utc),
-    name="Merged SBOM",
-    document_namespace="https://replace-with-your-preferred-organisation-namespace/spdx/",
-    creators=[Actor(ActorType.TOOL, "sbom-aggregator/1.0")],
-    spdx_id="SPDXRef-DOCUMENT",
-)
+    id_mapping = {}
 
-# Create the document with basic metadata
-merged = Document(creation_info=creation_info)
+    for file_path in input_files:
+        repo_name = os.path.basename(file_path).split(".")[0]  # Use file name as repo name
+        doc = parse_file(file_path)
 
-id_mapping = {}
+        # Update package IDs
+        for pkg in doc.packages:
+            old_id = pkg.spdx_id
+            new_id = f"SPDXRef-{repo_name}-{old_id.split('SPDXRef-')[-1]}"
+            id_mapping[old_id] = new_id
+            pkg.spdx_id = new_id
+            merged.packages.append(pkg)
 
-for file_path in input_files:
-    repo_name = os.path.basename(file_path).split(".")[0]  # Use file name as repo name
-    doc = parse_file(file_path)
+        # Update relationships
+        for rel in doc.relationships:
+            # Patch related SPDX IDs
+            related_id = rel.related_spdx_element_id
+            source_id = rel.spdx_element_id
 
-    # Update package IDs
-    for pkg in doc.packages:
-        old_id = pkg.spdx_id
-        new_id = f"SPDXRef-{repo_name}-{old_id.split('SPDXRef-')[-1]}"
-        id_mapping[old_id] = new_id
-        pkg.spdx_id = new_id
-        merged.packages.append(pkg)
+            rel.related_spdx_element_id = id_mapping.get(related_id, related_id)
+            rel.spdx_element_id = id_mapping.get(source_id, source_id)
 
-    # Update relationships
-    for rel in doc.relationships:
-        # Patch related SPDX IDs
-        related_id = rel.related_spdx_element_id
-        source_id = rel.spdx_element_id
+            merged.relationships.append(rel)
 
-        rel.related_spdx_element_id = id_mapping.get(related_id, related_id)
-        rel.spdx_element_id = id_mapping.get(source_id, source_id)
+    write_file(merged, output_file)
 
-        merged.relationships.append(rel)
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: merge_sboms.py <output_file> <input1> <input2> ...")
+        sys.exit(1)
 
-write_file(merged, output_file)
+    output_file = sys.argv[1]
+    input_files = sys.argv[2:]
+    merge_sboms(output_file, input_files)
 
+if __name__ == "__main__": # pragma: no cover
+    main()
