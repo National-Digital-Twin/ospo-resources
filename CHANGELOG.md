@@ -17,6 +17,12 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.98.2] - 2026-03-17
+
+### Update
+
+- add sbom-aggregation directory to dependabot pip config
+
 ## [0.98.1] - 2026-03-17
 
 ### Added
