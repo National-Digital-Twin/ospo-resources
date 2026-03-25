@@ -17,6 +17,19 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.98.3] - 2026-03-25
+
+### Fixed
+
+- improve Conftest installation step with fallback version handling
+
+### Updated
+
+- bump dorny/test-reporter from 2.6.0 to 3.0.0
+- bump github/codeql-action from 4.33.0 to 4.34.1
+- bump trufflesecurity/trufflehog from 3.93.8 to 3.94.0 in /tools/credential-scanning
+- bump pytest-cov from 7.0.0 to 7.1.0 in /tools/sbom-aggregation
+
 ## [0.98.2] - 2026-03-17
 
 ### Update

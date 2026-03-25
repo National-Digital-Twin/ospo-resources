@@ -357,7 +357,7 @@ jobs:
         if: |
           github.event.repository.visibility == 'public' &&
           steps.results-check.outputs.sarif-reports == 'true'
-        uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
+        uses: github/codeql-action/upload-sarif@38697555549f1db7851b81482ff19f1fa5c4fedc # v4.34.1
         with:
           sarif_file: test-results/lint-results.sarif
           category: regal-lint
@@ -372,7 +372,7 @@ jobs:
             ${{ steps.results-check.outputs.sonar-args }}
 
       - name: Publish Test Results
-        uses: dorny/test-reporter@3d76b34a4535afbd0600d347b09a6ee5deb3ed7f # v2.6.0
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         if: |
           always() &&
           steps.results-check.outputs.unit-reports == 'true'

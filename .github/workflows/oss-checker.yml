@@ -103,10 +103,27 @@ jobs:
             core.info('Generated repository-metadata.json for policy context.');
 
       - name: Install Conftest
+        env:
+          FALLBACK_VERSION: '0.37.0'
         run: |
-          LATEST_VERSION=$(curl --proto "=https" -s "https://api.github.com/repos/open-policy-agent/conftest/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+')
-          curl --proto "=https" -L "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_Linux_x86_64.tar.gz" | tar -xz
-          sudo mv conftest /usr/local/bin/
+          set -euo pipefail
+
+          install_conftest() {
+            local version="$1"
+            curl --proto "=https" --fail -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${version}/conftest_${version}_Linux_x86_64.tar.gz" -o conftest.tar.gz
+            tar -xzf conftest.tar.gz
+            sudo mv conftest /usr/local/bin/
+            rm -f conftest.tar.gz
+          }
+
+          LATEST_VERSION="$(curl --proto "=https" --fail -s "https://api.github.com/repos/open-policy-agent/conftest/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+' || true)"
+
+          if [[ -n "${LATEST_VERSION}" ]] && install_conftest "${LATEST_VERSION}"; then
+            echo "Installed latest Conftest version: ${LATEST_VERSION}"
+          else
+            echo "Failed to install latest Conftest. Falling back to version ${FALLBACK_VERSION}."
+            install_conftest "${FALLBACK_VERSION}"
+          fi
 
       - name: Run Policy Checks
         id: run_conftest
