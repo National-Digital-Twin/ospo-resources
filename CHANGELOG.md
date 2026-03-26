@@ -17,6 +17,16 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 
 ---
 
+## [0.99.0] - 2026-03-26
+
+### Fixed
+
+- update conftest installation method, preventing README.md overwrite and move back to deb
+
+### Update
+
+- removed back-merge workflow opt-in condition to ensure it runs on all merged PRs
+
 ## [0.98.3] - 2026-03-25
 
 ### Fixed
