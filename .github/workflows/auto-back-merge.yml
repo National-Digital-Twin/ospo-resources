@@ -2,7 +2,6 @@
 # © Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
 
 # This workflow is triggered when a pull request is merged into the main branch and automatically merges the main branch back into develop to keep it up to date.
-# This is currently opt-in via the repository variable MERGE_BACK_OPT_IN but will eventually be enabled by default.
 # If the merge fails (e.g., due to conflicts), a manual intervention is required. The workflow generates a Job summary of the merge attempt.
 name: Auto Back-merge Main to Develop
 
@@ -23,11 +22,7 @@ jobs:
     permissions: {}
 
     name: Back-merge Main to Develop
-    # Only run if the PR was actually merged (not just closed) and 
-    # if the repository variable MERGE_BACK_OPT_IN is set to 'true'.
-    #
-    # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-variables#creating-configuration-variables-for-a-repository
-    if: github.event.pull_request.merged == true && vars.MERGE_BACK_OPT_IN == 'true'
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:

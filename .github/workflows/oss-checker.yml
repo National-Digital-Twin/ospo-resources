@@ -104,16 +104,16 @@ jobs:
 
       - name: Install Conftest
         env:
-          FALLBACK_VERSION: '0.37.0'
+          FALLBACK_VERSION: '0.67.1'
         run: |
           set -euo pipefail
 
           install_conftest() {
             local version="$1"
-            curl --proto "=https" --fail -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${version}/conftest_${version}_Linux_x86_64.tar.gz" -o conftest.tar.gz
-            tar -xzf conftest.tar.gz
-            sudo mv conftest /usr/local/bin/
-            rm -f conftest.tar.gz
+            local file_name="conftest_${version}_Linux_x86_64.deb"
+            curl --proto "=https" --fail -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${version}/${file_name}" -o "${file_name}"
+            sudo dpkg -i "${file_name}"
+            rm -f "${file_name}"
           }
 
           LATEST_VERSION="$(curl --proto "=https" --fail -s "https://api.github.com/repos/open-policy-agent/conftest/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+' || true)"
