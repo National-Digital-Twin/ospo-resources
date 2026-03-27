@@ -11,7 +11,7 @@ At present, **there is no actively assigned supplier maintaining this repository
 In the meantime:  
 - **Bug reports and documentation feedback** will still be reviewed by NDTP.  
 - **Security vulnerabilities** should be reported via the [responsible disclosure process](./SECURITY.md).  
-- **For any queries, please contact:** **[ndtp-contact@example.com]** 
+- **For any queries, please contact:** **[ndtp@businessandtrade.gov.uk]** 
 
 Once a new supplier is engaged, this file will be updated with their details. 
 
@@ -21,9 +21,9 @@ The following organisations were responsible for previous development efforts on
 
 | Name              | Organisation           | Role               | Contact                            |
 |-------------------|------------------------|--------------------|------------------------------------|
-| James Cruddas     | Informed Solutions     | Lead Maintainer    | <james.cruddas@informed.com>       |
-| Nikan Negaresh    | Informed Solutions     | Security Contact   | <nikan.negaresh@informed.com>      |
-| Jake Aitchison    | Answer Digital Ltd     | Documentation Lead | <james.cruddas@informed.com>       |
+| James Cruddas     | Informed Solutions     | Lead Maintainer    | <ndtp@businessandtrade.gov.uk>       |
+| Nikan Negaresh    | Informed Solutions     | Security Contact   | <ndtp@businessandtrade.gov.uk>      |
+| Jake Aitchison    | Answer Digital Ltd     | Documentation Lead | <ndtp@businessandtrade.gov.uk>       |
 
 *For ongoing inquiries, please use the NDTP contact email above.* 
 
