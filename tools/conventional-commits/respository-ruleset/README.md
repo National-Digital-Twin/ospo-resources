@@ -44,7 +44,7 @@ To run the tests locally, you will need:
 3. Install dependencies:
 
    ```bash
-   pip install -r requirements.txt
+   pip install --only-binary :all: -r requirements.txt
    ```
 
 ## Running Tests
