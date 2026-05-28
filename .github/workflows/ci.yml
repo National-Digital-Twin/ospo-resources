@@ -212,7 +212,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --only-binary :all: -r tools/conventional-commits/respository-ruleset/requirements.txt
+          pip install --only-binary :all: --require-hashes -r tools/conventional-commits/respository-ruleset/requirements.txt
 
       - name: Run Tests
         run: |
@@ -250,7 +250,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --only-binary :all: -r tools/sbom-aggregation/requirements.txt
+          pip install --only-binary :all: --require-hashes -r tools/sbom-aggregation/requirements.txt
 
       - name: Run Tests
         run: |
