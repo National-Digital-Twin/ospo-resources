@@ -16,6 +16,12 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 - **Build metadata** – If needed, use `+build` (e.g., `2.1.0+20250314`).
 
 ---
+## [0.99.2] - 2026-06-04
+
+### Update
+
+- skip sonar scan if dependabot pull request raised to preserve action minutes usage
+
 ## [0.99.1] - 2026-05-28
 
 ### Update
