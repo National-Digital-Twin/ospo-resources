@@ -31,7 +31,7 @@ jobs:
         run: |
           sudo apt-get install -y jq
           python3 -m pip install --upgrade pip setuptools
-          pip install --cache-dir ~/.cache/pip -r requirements.txt
+          pip install --cache-dir ~/.cache/pip --only-binary :all: -r requirements.txt
           sudo apt update
           sudo apt install -y gh
 
@@ -58,7 +58,7 @@ jobs:
           page=1
 
           while : ; do
-            result=$(curl -sSL \
+            result=$(curl -sSL --proto '=https' --tlsv1.2 \
               -H "Authorization: Bearer ${{ steps.app_token.outputs.token }}" \
               -H "Accept: application/vnd.github+json" \
               "$API_URL/orgs/$ORG_NAME/repos?type=all&per_page=100&page=$page")
@@ -100,7 +100,7 @@ jobs:
             echo "Generating SBOM for $repo"
 
             response_file=$(mktemp)
-            status_code=$(curl -sSL -w "%{http_code}" -o "$response_file" \
+            status_code=$(curl -sSL --proto '=https' --tlsv1.2 -w "%{http_code}" -o "$response_file" \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ steps.app_token.outputs.token }}" \
               "$API_URL/repos/$ORG_NAME/$repo/dependency-graph/sbom")

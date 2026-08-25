@@ -81,7 +81,7 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           # Call GitHub API to generate SBOM
-          api_response=$(curl -sSL \
+          api_response=$(curl -sSL --proto '=https' --tlsv1.2 \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
