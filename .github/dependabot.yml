@@ -6,7 +6,6 @@ updates:
       - "/tools/credential-scanning"
       - "/tools/sbom-aggregation"
       - "/tools/fork-support"
-    target-branch: "develop"
     schedule:
       interval: "weekly"
     groups:
