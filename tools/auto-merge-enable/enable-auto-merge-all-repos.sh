@@ -4,12 +4,13 @@
 # © Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally 
 # attributed to the UK's Department for Business, Innovation, Science and Trade (BIST) as the governing entity.
 
-# Enable the repository-level Allow auto-merge setting on GitHub.com.
+# Enables the repository-level Allow auto-merge setting on all GitHub repositories in an organisation.
 # Requires Bash and GitHub CLI (gh), authenticated with access to all target
 # repositories and permission to update repository settings. Fine-grained
 # tokens need repository Administration: write permission.
 # Usage: bash enable-org-auto-merge.sh ORGANISATION [--dry-run]
-# This does not enable auto-merge on individual pull requests.
+# This does not enable auto-merge on individual pull requests (it just enables the repository setting).
+
 set -euo pipefail
 
 if [[ $# -lt 1 || $# -gt 2 ]]; then
