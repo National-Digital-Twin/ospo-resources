@@ -5,3 +5,4 @@
 .github/workflows/publish-github-release.yml
 .github/workflows/auto-back-merge.yml
 .github/workflows/oss-checker.yml
+.github/workflows/auto-merge-dependabot-pull-requests.yml
