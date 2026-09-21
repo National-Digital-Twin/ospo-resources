@@ -12,9 +12,9 @@ package github.dependabot
 # entrypoint: true
 # description: Deny GitHub Actions updates with an explicit target-branch field
 deny contains msg if {
+	msg := "Dependabot update configuration for 'github-actions' must omit 'target-branch' so updates target the repository default branch"
+
 	some update in input.updates
 	update["package-ecosystem"] == "github-actions"
 	"target-branch" in object.keys(update)
-
-	msg := "Dependabot update configuration for 'github-actions' must omit 'target-branch' so updates target the repository default branch"
 }
