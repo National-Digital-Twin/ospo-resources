@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+# © Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally 
+# attributed to the UK's Department for Business, Innovation, Science and Trade (BIST) as the governing entity.
 
 name: Run OSS check helper
 
@@ -409,14 +410,14 @@ jobs:
             );
 
             const combinedTableMarkdown = [
-              '| 📄 File | ✅ Result | 🧾 Details |',
+              '| File | Result | Details |',
               '| :--- | :---: | :--- |',
               ...allResults.map((result) => {
                 const href = `https://github.com/${result.repo}/blob/${result.commit}/${result.path}`;
                 const details = result.failureReasons.length > 0
                   ? result.failureReasons.join('; ')
                   : 'Compliant';
-                const statusLabel = result.status === 'passed' ? '🟢 Pass' : '🔴 Fail';
+                const statusLabel = result.status === 'passed' ? 'Pass' : 'Fail';
                 return `| [${result.path}](${href}) | ${statusLabel} | ${details} |`;
               }),
             ].join('\n');
@@ -428,11 +429,11 @@ jobs:
             const summary = { total, passed, failed, score };
 
             const overallStatus = summary.failed === 0
-              ? '🎉 Overall status: PASS (all files compliant).'
-              : '⚠️ Overall status: FAIL (see table below for details).';
+              ? 'Overall status: PASS (all files compliant).'
+              : 'Overall status: FAIL (see table below for details).';
 
             const summaryMarkdown = [
-              '| 📊 Total Files | 🟢 Passed | 🔴 Failed | 🧮 Score |',
+              '| Total Files | Passed | Failed | Score |',
               '| ---: | ---: | ---: | ---: |',
               `| ${summary.total} | ${summary.passed} | ${summary.failed} | ${summary.score.toFixed(0)}% |`
             ].join('\n');
@@ -449,9 +450,9 @@ jobs:
               : `Results from commit \`${shortSha}\`.`;
 
             await core.summary
-              .addRaw('# OSS Check Results ⚙️\n', true)
+              .addRaw('# OSS Check Results\n', true)
               .addRaw(`\n${combinedTableMarkdown}\n`, true)
-              .addRaw('\n# Summary 🏁\n', true)
+              .addRaw('\n# Summary\n', true)
               .addRaw(`\n${overallStatus}\n`, true)
               .addRaw(`\n${summaryMarkdown}\n`, true)
               .addRaw(`\n${commitLine}\n`, true)
@@ -512,8 +513,8 @@ jobs:
 
             const marker = '<!-- oss-checks-comment -->';
             const heading = isFailure
-              ? '## ⚠️ OSS Checks Failed'
-              : '## ✅ OSS Checks Passed';
+              ? '## OSS Checks Failed'
+              : '## OSS Checks Passed';
             const narration = isFailure
               ? 'One or more OSS checks failed in this run.'
               : 'All tracked OSS checks passed in this run.';
@@ -522,7 +523,7 @@ jobs:
               heading,
               narration,
               process.env.SUMMARY_TABLE,
-              `Results from commit ${shortSha}, view the full [job summary↗️](${jobSummaryUrl}) for detailed results.`
+              `Results from commit ${shortSha}, view the full [job summary](${jobSummaryUrl}) for detailed results.`
             ];
 
             const existingComments = await github.paginate(

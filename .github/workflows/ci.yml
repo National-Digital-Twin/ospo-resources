@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+# © Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally 
+# attributed to the UK's Department for Business, Innovation, Science and Trade (BIST) as the governing entity.
 
 name: CI
 
@@ -357,13 +358,13 @@ jobs:
         if: |
           github.event.repository.visibility == 'public' &&
           steps.results-check.outputs.sarif-reports == 'true'
-        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         with:
           sarif_file: test-results/lint-results.sarif
           category: regal-lint
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        uses: SonarSource/sonarqube-scan-action@ba9859eae8dd6bd29e412f25ddbbef3d032000f4 # v8.2.2
         if: github.actor != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

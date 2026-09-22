@@ -5,6 +5,9 @@
 **SPDX-License-Identifier:** `OGL-UK-3.0`  
 
 All notable changes to this repository will be documented in this file.
+
+Routine updates limited to patching GitHub Actions dependencies are excluded from new changelog entries, as they do not themselves change the functional behaviour of application software. Changes that alter workflow functionality, security controls or application behaviour remain reportable. Historical entries documenting GitHub Actions dependency updates are retained for reference.
+
 This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semver.org/)), using the format:
 
 `[MAJOR].[MINOR].[PATCH]`
@@ -16,6 +19,17 @@ This project follows **Semantic Versioning (SemVer)** ([semver.org](https://semv
 - **Build metadata** – If needed, use `+build` (e.g., `2.1.0+20250314`).
 
 ---
+
+## [0.99.6] - 2026-09-21
+
+### Added
+
+- Added dependabot auto-merge solution
+
+### Changed
+
+- Updated DBT references to BIST
+
 ## [0.99.5] - 2026-08-12
 
 ### Changed
@@ -338,7 +352,7 @@ Once `1.0.0` is reached, future versions will follow **strict SemVer rules**.
 
 **Maintained by the National Digital Twin Programme (NDTP).**
 
-© Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+© Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally attributed to the UK's Department for Business, Innovation, Science and Trade (BIST) as the governing entity.
 
 Licensed under the Open Government Licence v3.0.
 

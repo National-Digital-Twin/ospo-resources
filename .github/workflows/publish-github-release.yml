@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-# © Crown Copyright 2025. This work has been developed by the National Digital Twin Programme and is legally attributed to the Department for Business and Trade (UK) as the governing entity.
+# © Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally 
+# attributed to the UK's Department for Business, Innovation, Science and Trade (BIST) as the governing entity.
 
 # This workflow is triggered when a pull request is merged into the main branch
 # from a release/* or hotfix/* branch. It extracts the release version from the source branch,
@@ -135,7 +136,7 @@ jobs:
           name: sbom
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: "v${{ needs.versioning.outputs.version }}"
           name: "Release v${{ needs.versioning.outputs.version }}"
