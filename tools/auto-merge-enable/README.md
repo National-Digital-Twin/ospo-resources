@@ -5,7 +5,7 @@
 
 # Utility helper to enable auto-merge across an organisation
 
-`enable-auto-merge-all-repos.sh` enables the **Allow auto-merge** repository setting across all repositories visible to your authenticated account in a GitHub organisation on GitHub.com. This is intended to support capabilities such as automatically merging dependabot pull requests, like that seen in [auto-merge-dependabot-pull-requests.yml](../../.github/workflows/auto-merge-dependabot-pull-requests.yml).
+`enable-auto-merge-all-repos.sh` bulk enables the **Allow auto-merge** repository setting for all repositories in a GitHub organisation. This is needed to support capabilities such as automatically merging dependabot pull requests, like that seen in [auto-merge-dependabot-pull-requests.yml](../../.github/workflows/auto-merge-dependabot-pull-requests.yml).
 
 ## Prerequisites
 
