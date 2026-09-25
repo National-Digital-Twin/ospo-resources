@@ -25,7 +25,7 @@ GitHub’s auto-generated contributor insights: [Contributors](https://github.co
 **Note:** This acknowledgment does not confer any legal rights, ownership, or imply ongoing involvement by any of the named organisations or individuals.
 All contributions are made in accordance with the repository’s licensing terms.
 
-© Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally attributed to the UK's Department for Business, Innovation, Science and Trade (BIST) the governing entity.
+© Crown Copyright 2026. This work has been developed by the National Digital Twin Programme and is legally attributed to the UK's Department for Business, Innovation, Science and Trade (BIST) as the governing entity.
 
 Licensed under the Open Government Licence v3.0.
 
