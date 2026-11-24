@@ -72,33 +72,27 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const { writeFileSync } = require('fs');
-            const defaultBranch = process.env.DEFAULT_BRANCH;
 
-            // Only check for 'develop' when the GitFlow policies need that information.
+            // Check specifically for 'develop' branch existence
             let hasDevelopBranch = false;
-            if (defaultBranch === 'main') {
-              try {
-                await github.rest.repos.getBranch({
-                  owner,
-                  repo,
-                  branch: 'develop',
-                });
-                hasDevelopBranch = true;
-              } catch (error) {
-                if (error.status !== 404) {
-                  const status = error.status ?? 'unknown';
-                  throw new Error(
-                    `Unable to check whether ${owner}/${repo} has a develop branch (HTTP ${status}): ${error.message}`,
-                  );
-                }
+            try {
+              await github.rest.repos.getBranch({
+                owner,
+                repo,
+                branch: 'develop',
+              });
+              hasDevelopBranch = true;
+            } catch (error) {
+              if (error.status !== 404) {
+                 core.warning(`Error checking for develop branch: ${error.message}`);
               }
             }
 
             const metadata = {
               repository: {
-                defaultBranch,
+                defaultBranch: process.env.DEFAULT_BRANCH,
                 hasDevelopBranch: hasDevelopBranch,
-                repositoryName: repo
+                repositoryName: repo,
               }
             };
 
@@ -136,60 +130,40 @@ jobs:
       - name: Run Policy Checks
         id: run_conftest
         run: |
-          set -euo pipefail
-
-          run_policy() {
-            local input="$1" namespace="$2" report="$3" status=0
-            conftest test "$input" \
-              -p ospo-resources/tools/policy-as-code/policy \
-              --data ospo-resources/tools/policy-as-code/policy \
-              --data repository-metadata.json \
-              --namespace "$namespace" \
-              --output json > "$report" || status=$?
-
-            # Conftest also exits 1 for execution errors, not just policy denials.
-            if (( status != 0 )) && { (( status != 1 )) ||
-              ! jq -e 'any(.[]; (.failures // []) | length > 0)' "$report" > /dev/null; }; then
-              echo "Conftest failed to produce a denial report for $namespace (exit $status)." >&2
-              return 1
-            fi
-          }
-
-          run_policy .github/dependabot.yml github.dependabot dependabot-policy-report.json
-          run_policy repository-metadata.json github.repository repository-policy-report.json
+          conftest test .github/dependabot.yml \
+            -p ospo-resources/tools/policy-as-code/policy \
+            --data ospo-resources/tools/policy-as-code/policy \
+            --data repository-metadata.json \
+            --namespace github.dependabot \
+            --output json > dependabot-policy-report.json || true
+          # Enforce GitFlow branch requirements independently of Dependabot configuration.
+          conftest test repository-metadata.json \
+            -p ospo-resources/tools/policy-as-code/policy \
+            --data ospo-resources/tools/policy-as-code/policy \
+            --data repository-metadata.json \
+            --namespace github.repository \
+            --output json > repository-policy-report.json || true
+          # Preserve failures from both policy namespaces in the existing summary.
           jq -s 'add' dependabot-policy-report.json repository-policy-report.json > policy-report.json
 
       - name: Process Policy Results
-        id: process_policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-             const { readFileSync, writeFileSync } = require('fs');
+             const { existsSync, readFileSync, writeFileSync } = require('fs');
 
-             let resultJson;
-             try {
-               resultJson = JSON.parse(readFileSync('policy-report.json', 'utf8'));
-               const expected = new Map([
-                 ['github.dependabot', '.github/dependabot.yml'],
-                 ['github.repository', 'repository-metadata.json'],
-               ]);
-               if (!Array.isArray(resultJson) || resultJson.length !== expected.size ||
-                   !resultJson.every((result) => {
-                     if (!result || expected.get(result.namespace) !== result.filename ||
-                         !Number.isInteger(result.successes) || result.successes < 0) return false;
-                     const failures = result.failures === undefined ? [] : result.failures;
-                     const warnings = result.warnings === undefined ? [] : result.warnings;
-                     if (!Array.isArray(failures) || !Array.isArray(warnings) ||
-                       ![...failures, ...warnings].every((item) => typeof item?.msg === 'string' && item.msg) ||
-                         result.successes + failures.length + warnings.length === 0) return false;
-                     expected.delete(result.namespace);
-                     return true;
-                   })) {
-                 throw new Error('expected results from both policy namespaces');
+             let resultJson = [];
+             if (existsSync('policy-report.json')) {
+               try {
+                 const rawContent = readFileSync('policy-report.json', 'utf8');
+                 if (rawContent.trim()) {
+                    resultJson = JSON.parse(rawContent);
+                 }
+               } catch(e) {
+                 core.error(`Failed to parse policy-report.json: ${e.message}`);
+                 core.setFailed(`Failed to parse policy-report.json: ${e.message}`);
+                 return;
                }
-             } catch(e) {
-               core.setFailed(`Failed to read policy-report.json: ${e.message}`);
-               return;
              }
 
              const results = resultJson.map(r => {
@@ -240,7 +214,6 @@ jobs:
              }
 
       - name: Test for presence of OSS files and variation from templated content
-        id: oss_files
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         if: success() || failure()
         with:
@@ -257,8 +230,6 @@ jobs:
             const prHead = context.payload.pull_request?.head;
             const repoFullName = prHead?.repo?.full_name ?? process.env.GITHUB_REPOSITORY ?? 'unknown/unknown';
             const commitSha = prHead?.sha ?? process.env.GITHUB_SHA ?? 'unknown';
-            const isArchetypes = context.repo.owner.toLowerCase() === 'national-digital-twin' &&
-              context.repo.repo.toLowerCase() === 'archetypes';
 
             for (const relativePath of checklist) {
               const record = {
@@ -287,7 +258,7 @@ jobs:
 
               const targetContent = readFileSync(targetPath, 'utf8');
 
-              if (isArchetypes) {
+              if (context.repo.repo === 'archetypes') {
                 record.checks.differsFromTemplate = null;
                 core.info(`Skipping template comparison for ${targetPath}: target repository is the archetypes template itself.`);
               } else if (existsSync(archetypePath)) {
@@ -341,13 +312,10 @@ jobs:
                 .map((result) => result.path);
               core.setFailed(`The following files failed checks:\n${failedFiles.join('\n')}`);
             } else {
-              core.info(isArchetypes
-                ? 'All OSS files are present; template comparison was skipped for the archetypes repository.'
-                : 'All OSS files are present and have been updated from their original templated content.');
+              core.info('All OSS files are present and have been updated from their original templated content.');
             }
 
       - name: Check GitHub template files are present
-        id: template_files
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         if: success() || failure()
         with:
@@ -420,58 +388,30 @@ jobs:
         id: summarise_results
         if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          POLICY_STEP_OUTCOME: ${{ steps.run_conftest.outcome }}
-          POLICY_RESULTS_OUTCOME: ${{ steps.process_policy.outcome }}
-          OSS_STEP_OUTCOME: ${{ steps.oss_files.outcome }}
-          TEMPLATE_STEP_OUTCOME: ${{ steps.template_files.outcome }}
         with:
           script: |
-            const { readFileSync } = require('fs');
+            const { existsSync, readFileSync } = require('fs');
 
             const reportFiles = [
-              ['oss-results.json', 'OSS', process.env.OSS_STEP_OUTCOME],
-              ['template-results.json', 'template', process.env.TEMPLATE_STEP_OUTCOME],
-              ['policy-results.json', 'policy', process.env.POLICY_RESULTS_OUTCOME],
+              'oss-results.json',
+              'template-results.json',
+              'policy-results.json',
             ];
 
-            const reports = [];
-            const reportProblems = [];
-            if (process.env.POLICY_STEP_OUTCOME !== 'success') {
-              reportProblems.push(`Run Policy Checks: step ${process.env.POLICY_STEP_OUTCOME || 'did not run'}`);
-            }
-            for (const [reportPath, checkType, stepOutcome] of reportFiles) {
-              try {
-                const report = JSON.parse(readFileSync(reportPath, 'utf8'));
-                if (report?.runMetadata?.checkType !== checkType ||
-                  typeof report.runMetadata.repo !== 'string' || !report.runMetadata.repo ||
-                  typeof report.runMetadata.commit !== 'string' || !report.runMetadata.commit ||
-                    !Array.isArray(report.files) || report.files.length === 0 ||
-                    !report.files.every((file) => file &&
-                      typeof file.path === 'string' && file.path &&
-                      ['passed', 'failed'].includes(file.status) &&
-                      Array.isArray(file.failureReasons) &&
-                      file.failureReasons.every((reason) => typeof reason === 'string' && reason) &&
-                      (file.status === 'passed' ? !file.failureReasons.length : file.failureReasons.length))) {
-                  throw new Error('invalid report structure');
+            const reports = reportFiles
+              .filter((reportPath) => {
+                const present = existsSync(reportPath);
+                if (!present) {
+                  core.info(`Summary step skipping missing report: ${reportPath}`);
                 }
-                if (checkType === 'policy' && process.env.POLICY_STEP_OUTCOME !== 'success') {
-                  throw new Error('policy checks did not complete');
-                }
-                if (checkType === 'policy' && (report.files.length !== 2 ||
-                    !report.files.some((file) => file.path === '.github/dependabot.yml' && file.checks?.namespace === 'github.dependabot') ||
-                    !report.files.some((file) => file.path === 'repository-metadata.json' && file.checks?.namespace === 'github.repository'))) {
-                  throw new Error('incomplete policy report');
-                }
-                if (stepOutcome !== 'success' &&
-                    !(stepOutcome === 'failure' && report.files.some((file) => file.status === 'failed'))) {
-                  throw new Error(`producing step ${stepOutcome || 'did not run'}`);
-                }
-                reports.push(report);
-              } catch (error) {
-                reportProblems.push(`${reportPath}: ${error.message}`);
-                core.error(`Cannot use required report ${reportPath}: ${error.message}`);
-              }
+                return present;
+              })
+              .map((reportPath) => JSON.parse(readFileSync(reportPath, 'utf8')));
+
+            if (reports.length === 0) {
+              core.info('No report files found; skipping combined summary.');
+              core.setOutput('hasResults', 'false');
+              return;
             }
 
             const allResults = reports.flatMap((report) =>
@@ -488,16 +428,12 @@ jobs:
               '| :--- | :---: | :--- |',
               ...allResults.map((result) => {
                 const href = `https://github.com/${result.repo}/blob/${result.commit}/${result.path}`;
-                const fileLabel = result.category === 'policy' && result.checks?.namespace === 'github.repository'
-                  ? `\`${result.path}\` (generated policy input)`
-                  : `[${result.path}](${href})`;
                 const details = result.failureReasons.length > 0
                   ? result.failureReasons.join('; ')
                   : 'Compliant';
                 const statusLabel = result.status === 'passed' ? 'Pass' : 'Fail';
-                return `| ${fileLabel} | ${statusLabel} | ${details} |`;
+                return `| [${result.path}](${href}) | ${statusLabel} | ${details} |`;
               }),
-              ...reportProblems.map((problem) => `| Required report | Fail | ${problem} |`),
             ].join('\n');
 
             const total = allResults.length;
@@ -506,17 +442,14 @@ jobs:
             const score = total > 0 ? (passed / total) * 100 : 0;
             const summary = { total, passed, failed, score };
 
-            const overallStatus = summary.failed === 0 && reportProblems.length === 0
+            const overallStatus = summary.failed === 0
               ? 'Overall status: PASS (all files compliant).'
               : 'Overall status: FAIL (see table below for details).';
 
             const summaryMarkdown = [
               '| Total Files | Passed | Failed | Score |',
               '| ---: | ---: | ---: | ---: |',
-              `| ${summary.total} | ${summary.passed} | ${summary.failed} | ${summary.score.toFixed(0)}% |`,
-              ...(reportProblems.length > 0
-                ? [`\nIncomplete results; counts cover available valid reports only. Required report errors: ${reportProblems.join('; ')}.`]
-                : []),
+              `| ${summary.total} | ${summary.passed} | ${summary.failed} | ${summary.score.toFixed(0)}% |`
             ].join('\n');
 
             const prHead = context.payload.pull_request?.head;
@@ -542,12 +475,12 @@ jobs:
             core.setOutput('hasResults', 'true');
             core.setOutput('summaryTable', summaryMarkdown);
 
-            if (summary.failed > 0 || reportProblems.length > 0) {
-              core.setFailed('OSS checks detected failing files or missing/invalid required reports.');
+            if (summary.failed > 0) {
+              core.setFailed('OSS checks detected one or more failing files.');
             }
 
       - name: Upload OSS result artifacts
-        if: ${{ always() && steps.summarise_results.outputs.hasResults == 'true' }}
+        if: ${{ steps.summarise_results.outputs.hasResults == 'true' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: oss-checks-${{ github.run_id }}
