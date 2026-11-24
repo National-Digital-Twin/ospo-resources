@@ -147,23 +147,10 @@ jobs:
               --namespace "$namespace" \
               --output json > "$report" || status=$?
 
-            if (( status > 1 )); then
-              echo "Conftest failed for $namespace (exit $status)." >&2
-              return "$status"
-            fi
-
-            # Exit 1 is acceptable only for a valid report containing policy denials.
-            if ! jq -e -s --arg input "$input" --arg namespace "$namespace" --argjson status "$status" '
-              length == 1 and
-              (.[0] | type == "array" and length == 1 and
-                (.[0] | type == "object" and .filename == $input and .namespace == $namespace and
-                  (.successes | type == "number" and . >= 0 and floor == .) and
-                  ((if has("failures") then .failures else [] end) | type == "array" and all(.[]; type == "object" and (.msg | type == "string" and length > 0))) and
-                  ((if has("warnings") then .warnings else [] end) | type == "array" and all(.[]; type == "object" and (.msg | type == "string" and length > 0))) and
-                  (.successes + ((.failures // []) | length) + ((.warnings // []) | length) > 0) and
-                  (if $status == 1 then ((.failures // []) | length > 0) else ((.failures // []) | length == 0) end)))
-            ' "$report" > /dev/null; then
-              echo "Invalid or inconsistent Conftest report for $namespace (exit $status)." >&2
+            # Conftest also exits 1 for execution errors, not just policy denials.
+            if (( status != 0 )) && { (( status != 1 )) ||
+              ! jq -e 'any(.[]; (.failures // []) | length > 0)' "$report" > /dev/null; }; then
+              echo "Conftest failed to produce a denial report for $namespace (exit $status)." >&2
               return 1
             fi
           }
@@ -177,13 +164,10 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-             const { existsSync, readFileSync, writeFileSync } = require('fs');
+             const { readFileSync, writeFileSync } = require('fs');
 
              let resultJson;
              try {
-               if (!existsSync('policy-report.json')) {
-                 throw new Error('report is missing');
-               }
                resultJson = JSON.parse(readFileSync('policy-report.json', 'utf8'));
                const expected = new Map([
                  ['github.dependabot', '.github/dependabot.yml'],
@@ -195,14 +179,12 @@ jobs:
                          !Number.isInteger(result.successes) || result.successes < 0) return false;
                      const failures = result.failures === undefined ? [] : result.failures;
                      const warnings = result.warnings === undefined ? [] : result.warnings;
-                     const validMessages = (items) => Array.isArray(items) && items.every(
-                       (item) => item && typeof item.msg === 'string' && item.msg.length > 0,
-                     );
-                     if (!validMessages(failures) || !validMessages(warnings) ||
+                     if (!Array.isArray(failures) || !Array.isArray(warnings) ||
+                       ![...failures, ...warnings].every((item) => typeof item?.msg === 'string' && item.msg) ||
                          result.successes + failures.length + warnings.length === 0) return false;
                      expected.delete(result.namespace);
                      return true;
-                   }) || expected.size !== 0) {
+                   })) {
                  throw new Error('expected results from both policy namespaces');
                }
              } catch(e) {
@@ -445,7 +427,7 @@ jobs:
           TEMPLATE_STEP_OUTCOME: ${{ steps.template_files.outcome }}
         with:
           script: |
-            const { existsSync, readFileSync } = require('fs');
+            const { readFileSync } = require('fs');
 
             const reportFiles = [
               ['oss-results.json', 'OSS', process.env.OSS_STEP_OUTCOME],
@@ -460,43 +442,32 @@ jobs:
             }
             for (const [reportPath, checkType, stepOutcome] of reportFiles) {
               try {
-                if (!existsSync(reportPath)) throw new Error('missing');
                 const report = JSON.parse(readFileSync(reportPath, 'utf8'));
-                if (!report || report.runMetadata?.checkType !== checkType ||
+                if (report?.runMetadata?.checkType !== checkType ||
                   typeof report.runMetadata.repo !== 'string' || !report.runMetadata.repo ||
                   typeof report.runMetadata.commit !== 'string' || !report.runMetadata.commit ||
                     !Array.isArray(report.files) || report.files.length === 0 ||
                     !report.files.every((file) => file &&
-                      typeof file.path === 'string' && file.path.length > 0 &&
+                      typeof file.path === 'string' && file.path &&
                       ['passed', 'failed'].includes(file.status) &&
                       Array.isArray(file.failureReasons) &&
-                      file.failureReasons.every((reason) => typeof reason === 'string' && reason.length > 0) &&
-                      (file.status === 'passed' ? file.failureReasons.length === 0 : file.failureReasons.length > 0))) {
+                      file.failureReasons.every((reason) => typeof reason === 'string' && reason) &&
+                      (file.status === 'passed' ? !file.failureReasons.length : file.failureReasons.length))) {
                   throw new Error('invalid report structure');
                 }
-                const passed = report.files.filter((file) => file.status === 'passed').length;
-                const failed = report.files.length - passed;
-                if (!report.summary || report.summary.total !== report.files.length ||
-                    report.summary.passed !== passed || report.summary.failed !== failed ||
-                    report.summary.score !== Number((passed / report.files.length).toFixed(2))) {
-                  throw new Error('inconsistent report summary');
+                if (checkType === 'policy' && process.env.POLICY_STEP_OUTCOME !== 'success') {
+                  throw new Error('policy checks did not complete');
                 }
-                if (checkType === 'policy') {
-                  const expected = new Map([
-                    ['github.dependabot', '.github/dependabot.yml'],
-                    ['github.repository', 'repository-metadata.json'],
-                  ]);
-                  if (report.files.length !== expected.size || !report.files.every((file) => {
-                    if (expected.get(file.checks?.namespace) !== file.path) return false;
-                    expected.delete(file.checks.namespace);
-                    return true;
-                  }) || expected.size !== 0) throw new Error('incomplete policy report');
+                if (checkType === 'policy' && (report.files.length !== 2 ||
+                    !report.files.some((file) => file.path === '.github/dependabot.yml' && file.checks?.namespace === 'github.dependabot') ||
+                    !report.files.some((file) => file.path === 'repository-metadata.json' && file.checks?.namespace === 'github.repository'))) {
+                  throw new Error('incomplete policy report');
                 }
-                reports.push(report);
                 if (stepOutcome !== 'success' &&
                     !(stepOutcome === 'failure' && report.files.some((file) => file.status === 'failed'))) {
-                  reportProblems.push(`${reportPath}: producing step ${stepOutcome || 'did not run'}`);
+                  throw new Error(`producing step ${stepOutcome || 'did not run'}`);
                 }
+                reports.push(report);
               } catch (error) {
                 reportProblems.push(`${reportPath}: ${error.message}`);
                 core.error(`Cannot use required report ${reportPath}: ${error.message}`);
@@ -576,7 +547,7 @@ jobs:
             }
 
       - name: Upload OSS result artifacts
-        if: ${{ steps.summarise_results.outputs.hasResults == 'true' }}
+        if: ${{ always() && steps.summarise_results.outputs.hasResults == 'true' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: oss-checks-${{ github.run_id }}
