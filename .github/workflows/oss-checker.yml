@@ -72,25 +72,31 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const { writeFileSync } = require('fs');
+            const defaultBranch = process.env.DEFAULT_BRANCH;
 
-            // Check specifically for 'develop' branch existence
+            // Only check for 'develop' when the GitFlow policies need that information.
             let hasDevelopBranch = false;
-            try {
-              await github.rest.repos.getBranch({
-                owner,
-                repo,
-                branch: 'develop',
-              });
-              hasDevelopBranch = true;
-            } catch (error) {
-              if (error.status !== 404) {
-                throw error;
+            if (defaultBranch === 'main') {
+              try {
+                await github.rest.repos.getBranch({
+                  owner,
+                  repo,
+                  branch: 'develop',
+                });
+                hasDevelopBranch = true;
+              } catch (error) {
+                if (error.status !== 404) {
+                  const status = error.status ?? 'unknown';
+                  throw new Error(
+                    `Unable to check whether ${owner}/${repo} has a develop branch (HTTP ${status}): ${error.message}`,
+                  );
+                }
               }
             }
 
             const metadata = {
               repository: {
-                defaultBranch: process.env.DEFAULT_BRANCH,
+                defaultBranch,
                 hasDevelopBranch: hasDevelopBranch,
                 repositoryName: repo
               }
