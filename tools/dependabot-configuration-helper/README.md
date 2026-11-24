@@ -25,7 +25,9 @@ Once the script has been granted execution permissions, you can run it using the
 ./dependabot-configuration-helper.sh
 ```
 
-The script assumes the use of GitFlow and defaults the target branch for Dependabot pull requests to develop. However, when the script is run, you will be prompted to confirm or change this value.
+The script assumes the use of GitFlow and prompts for the target branch for non-GitHub Actions ecosystems, defaulting to `develop`. GitHub Actions entries omit `target-branch` so Dependabot targets the repository's default branch. The generated groups and optional exclusion of major version updates apply to all detected ecosystems, including GitHub Actions.
+
+For GitFlow repositories (default branch `main` and a `develop` branch), the Dependabot policy requires non-Actions entries to target `develop`. A custom target is preserved in the proposal, but may not satisfy that policy.
 
 This script is intended to support Dependabot configuration by applying a set of suggested defaults. It is *not* a substitute for thoughtful review. You should verify that the generated configuration is consistent with the package manager ecosystems used in your repository, or adjust as required to your team's requirements.
 

@@ -11,6 +11,16 @@ These policies are executed using [Conftest](https://www.conftest.dev/), a utili
 
 The policies defined here are automatically executed as part of the automated `oss-checker` workflow. This ensures that repositories are continuously validated against organisational standards, providing immediate feedback to contributors via automated compliance checks on Pull Requests.
 
+## Dependabot groups
+
+Each Dependabot update entry must have a nonempty `groups` object with object definitions and, unless `open-pull-requests-limit` is numeric zero, a version-update group. Omitted `applies-to` means `version-updates`; security-only groups do not qualify. Major updates may be separated as a review preference, not a requirement.
+
+## GitFlow repository branch policy
+
+GitHub Actions updates must omit `target-branch`. Other ecosystems must target `develop` when the repository defaults to `main` and has a `develop` branch. Repositories defaulting to `main` must have a `develop` branch unless their name is listed in `policy/github/repository/gitflow_exceptions.json`. Exceptions apply only to the repository branch policy, not the Dependabot rules.
+
+The checker loads policy and exception data from the OSPO repository's default branch. Changes on `develop` do not affect consuming repositories until released to that default branch.
+
 ## Prerequisites
 
 To develop, test, or run these policies locally, you will need the following tools installed:
@@ -30,10 +40,12 @@ tools/policy-as-code/
 │   ├── github/                        # Namespace: github
 │   │   ├── dependabot/                # Namespace: github.dependabot
 │   │   │   ├── dependabot.rego
-│   │   │   └── dependabot_test.rego
-│   │   └── required_files/            # Namespace: github.required_files (Future example)
-│   │       ├── checks.rego
-│   │       └── checks_test.rego
+│   │   │   ├── groups.rego
+│   │   │   └── *_test.rego
+│   │   └── repository/                # Namespace: github.repository
+│   │       ├── gitflow.rego
+│   │       ├── gitflow_exceptions.json
+│   │       └── gitflow_test.rego
 └── README.md
 ```
 
@@ -119,26 +131,25 @@ test_deny_missing_code_of_conduct if {
 
 ### Verification (Unit Tests)
 
-To run the unit tests and verify the logic of your policies:
+From the repository root, run:
 
 ```bash
 # Verify all policies
-conftest verify --policy policy/
+conftest verify --policy tools/policy-as-code/policy/
 
 # Verify a specific namespace (by pointing to the subdirectory)
-conftest verify --policy policy/github/dependabot/
+conftest verify --policy tools/policy-as-code/policy/github/dependabot/
 ```
 
 ### Testing against files (Execute Policies Locally)
 
-To run the policies against the real files:
+From the repository root, supply repository metadata as a JSON file with a `repository` object containing `defaultBranch`, `hasDevelopBranch` and `repositoryName`. Load the policy directory as data as well as policy so the centrally maintained exceptions are available:
 
 ```bash
-# Example: Testing dependabot config
-conftest test .github/dependabot.yml --policy policy/
-
-# Example: Testing a specific namespace against a file
-conftest test .github/dependabot.yml --policy policy/ --namespace github.dependabot
+conftest test .github/dependabot.yml --policy tools/policy-as-code/policy/ \
+    --data tools/policy-as-code/policy/ --data repository-metadata.json --namespace github.dependabot
+conftest test repository-metadata.json --policy tools/policy-as-code/policy/ \
+    --data tools/policy-as-code/policy/ --data repository-metadata.json --namespace github.repository
 ```
 
 ## Public Funding Acknowledgement
