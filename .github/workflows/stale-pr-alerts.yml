@@ -1,0 +1,135 @@
+# SPDX-License-Identifier: Apache-2.0
+# Crown Copyright 2026. Developed by the National Digital Twin Programme and legally attributed to the UK's Department for Business, Innovation, Science and Trade (BIST).
+
+name: Stale Dependabot PR alerts
+
+on:
+  schedule:
+    - cron: '23 8 * * *'
+  workflow_dispatch:
+    inputs:
+      days_before_stale:
+        description: Days a Dependabot PR can stay open before a reminder
+        type: number
+        default: 14
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: stale-dependabot-pr-alerts
+  cancel-in-progress: false
+
+jobs:
+  stale-pr-alerts:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check open Dependabot pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DAYS_BEFORE_STALE: ${{ github.event.inputs.days_before_stale || '14' }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          try:
+              days_before_stale = int(os.environ.get('DAYS_BEFORE_STALE', '14'))
+          except ValueError:
+              sys.exit('DAYS_BEFORE_STALE must be an integer between 1 and 3650.')
+          if not 1 <= days_before_stale <= 3650:
+              sys.exit('DAYS_BEFORE_STALE must be an integer between 1 and 3650.')
+
+          report_only = os.environ.get('GITHUB_EVENT_NAME') != 'schedule'
+          mode = 'report only' if report_only else 'post reminders'
+          repository = os.environ['GITHUB_REPOSITORY']
+          base = f'repos/{repository}'
+          marker = '<!-- ospo-stale-dependabot-pr-alert -->'
+          now = datetime.now(timezone.utc)
+          reminder_cutoff = now - timedelta(days=7)
+
+          def api(endpoint, *, paginate=False, body=None):
+              command = ['gh', 'api', endpoint]
+              if paginate:
+                  command += ['--paginate', '--jq', '.[] | tojson']
+              if body is not None:
+                  command += ['--method', 'POST', '--input', '-']
+              result = subprocess.run(
+                  command, input=json.dumps(body) if body is not None else None,
+                  text=True, capture_output=True, check=True, timeout=60,
+              )
+              if paginate:
+                  return [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+              return json.loads(result.stdout)
+
+          pulls = api(f'{base}/pulls?state=open&per_page=100', paginate=True)
+          dependabot_prs = [pr for pr in pulls if pr.get('user', {}).get('login') == 'dependabot[bot]']
+          rows = []
+          stale_count = 0
+          failed = False
+
+          for pr in dependabot_prs:
+              number = pr['number']
+              age_days = '-'
+              try:
+                  created_at = datetime.fromisoformat(pr['created_at'].replace('Z', '+00:00'))
+                  age = now - created_at
+                  if age <= timedelta(days=days_before_stale):
+                      continue
+                  stale_count += 1
+                  age_days = age.days
+                  comments = api(f'{base}/issues/{number}/comments?per_page=100', paginate=True)
+                  recently_alerted = any(
+                      comment.get('user', {}).get('login') == 'github-actions[bot]'
+                      and marker in (comment.get('body') or '')
+                      and datetime.fromisoformat(comment['created_at'].replace('Z', '+00:00')) > reminder_cutoff
+                      for comment in comments
+                  )
+
+                  if recently_alerted:
+                      result = 'Reminded within last 7 days'
+                  elif report_only:
+                      result = 'Would alert'
+                  else:
+                      # A PR can close while its comments are being fetched.
+                      if api(f'{base}/pulls/{number}')['state'] != 'open':
+                          rows.append(f'| #{number} | {age_days} | No longer open |')
+                          continue
+                      body = '\n\n'.join([
+                          marker,
+                          '### Dependabot PR needs review',
+                          f'This PR has been open for {age_days} days. The review threshold is {days_before_stale} days.',
+                          'Please check for failing builds, merge conflicts or compatibility issues before deciding whether to merge or close it.',
+                          'Nothing is merged, closed or deleted automatically.',
+                      ])
+                      api(f'{base}/issues/{number}/comments', body={'body': body})
+                      result = 'Alert posted'
+                  rows.append(f'| #{number} | {age_days} | {result} |')
+              except (subprocess.SubprocessError, ValueError, KeyError) as error:
+                  print(f'Could not process PR #{number}: {error}', file=sys.stderr)
+                  rows.append(f'| #{number} | {age_days} | Processing failed |')
+                  failed = True
+
+          summary = '\n'.join([
+              '# Stale Dependabot PR alerts',
+              '',
+              f'Repository: {repository}',
+              f'Mode: {mode}; threshold: more than {days_before_stale} days.',
+              'Reminder interval: 7 days.',
+              f'Open Dependabot PRs: {len(dependabot_prs)}; over threshold: {stale_count}.',
+              '',
+              '| PR | Age (days) | Result |',
+              '| --- | --- | --- |',
+              *rows,
+              '',
+          ])
+          with Path(os.environ['GITHUB_STEP_SUMMARY']).open('a', encoding='ascii') as output:
+              output.write(summary)
+          print(summary)
+          sys.exit(1 if failed else 0)
+          PY

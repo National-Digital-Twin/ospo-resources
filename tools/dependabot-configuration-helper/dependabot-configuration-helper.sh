@@ -67,7 +67,13 @@ add_dependabot_ecosystem() {
   cat >> "$output_file" <<EOF
   - package-ecosystem: "$ecosystem"
     directory: "$directory"
-    target-branch: "$target_branch"
+EOF
+
+  if [[ "$ecosystem" != "github-actions" ]]; then
+    echo "    target-branch: \"$target_branch\"" >> "$output_file"
+  fi
+
+  cat >> "$output_file" <<EOF
     schedule:
       interval: "$frequency"
     groups:

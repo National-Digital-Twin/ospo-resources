@@ -91,7 +91,8 @@ jobs:
             const metadata = {
               repository: {
                 defaultBranch: process.env.DEFAULT_BRANCH,
-                hasDevelopBranch: hasDevelopBranch
+                hasDevelopBranch: hasDevelopBranch,
+                repositoryName: repo,
               }
             };
 
@@ -131,9 +132,19 @@ jobs:
         run: |
           conftest test .github/dependabot.yml \
             -p ospo-resources/tools/policy-as-code/policy \
+            --data ospo-resources/tools/policy-as-code/policy \
             --data repository-metadata.json \
             --namespace github.dependabot \
-            --output json > policy-report.json || true
+            --output json > dependabot-policy-report.json || true
+          # Enforce GitFlow branch requirements independently of Dependabot configuration.
+          conftest test repository-metadata.json \
+            -p ospo-resources/tools/policy-as-code/policy \
+            --data ospo-resources/tools/policy-as-code/policy \
+            --data repository-metadata.json \
+            --namespace github.repository \
+            --output json > repository-policy-report.json || true
+          # Preserve failures from both policy namespaces in the existing summary.
+          jq -s 'add' dependabot-policy-report.json repository-policy-report.json > policy-report.json
 
       - name: Process Policy Results
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -247,7 +258,10 @@ jobs:
 
               const targetContent = readFileSync(targetPath, 'utf8');
 
-              if (existsSync(archetypePath)) {
+              if (context.repo.repo === 'archetypes') {
+                record.checks.differsFromTemplate = null;
+                core.info(`Skipping template comparison for ${targetPath}: target repository is the archetypes template itself.`);
+              } else if (existsSync(archetypePath)) {
                 const archetypeContent = readFileSync(archetypePath, 'utf8');
                 const differsFromTemplate = targetContent !== archetypeContent;
                 record.checks.differsFromTemplate = differsFromTemplate;

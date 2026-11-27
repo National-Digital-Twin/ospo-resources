@@ -70,6 +70,9 @@ Any proposed changes to the main branch must be navigated via a Pull Request, wh
     - [gitflow-pr-target-check.yml](.github/workflows/gitflow-pr-target-check.yml) - this action checks target branches of pull requests align with conventions of the GitFlow branching strategy
     -  [publish-github-release.yml](.github/workflows/publish-github-release.yml) - this automatically generates a Software Bill of Materials (SBOM) and attaches it to a new GitHub release when a release/* branch gets merged to main.
 - **Dependabot configuration helper** - creates draft groups for optimising dependabot configurations based on repository contents. Please see [dependabot-configuration-helper](./tools/dependabot-configuration-helper) for further details.
+- **Dependabot PR reminders** - [stale-pr-alerts.yml](./.github/workflows/stale-pr-alerts.yml) reports and reminds maintainers about long-open Dependabot pull requests.
+- **Policy as code** - [governance policies](./tools/policy-as-code) check Dependabot configuration and GitFlow repository branches as part of the OSS checker.
+- **Delete merged branches** - the [administrative helper](./tools/delete-branch-on-merge) can enable automatic deletion of merged branches across an organisation; use its dry-run mode first.
 - **Centralised Pull request labelling solution** - labels pull requests using the https://github.com/actions/labeler GitHub Action. A base configuration for use with GitFlow can be found at [labeler.yml](./.github/workflows/pull-request-labeler.yml).
 - **SBOM aggregation tool** - an automation solution for generating and grouping Software Bill of Materials for all repositories in a GitHub organisation. Please see [sbom-aggregation](./tools/sbom-aggregation).
 
